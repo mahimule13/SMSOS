@@ -1,0 +1,142 @@
+{% extends "base/layout.html" %}
+
+{% block title %}Create Teacher - SMS{% endblock %}
+{% block page_title %}Create Teacher{% endblock %}
+
+{% block content %}
+<div class="container">
+    <h3>Create Teacher</h3>
+
+    {% if messages %}
+        {% for message in messages %}
+            <div class="alert alert-{{ message.tags }}">{{ message }}</div>
+        {% endfor %}
+    {% endif %}
+
+    <form method="post" enctype="multipart/form-data">
+        {% csrf_token %}
+        <div class="row">
+            <div class="col-md-4 mb-3">
+                <label class="form-label">First name</label>
+                <input type="text" name="first_name" class="form-control" required>
+            </div>
+            <div class="col-md-4 mb-3">
+                <label class="form-label">Last name</label>
+                <input type="text" name="last_name" class="form-control" required>
+            </div>
+            <div class="col-md-4 mb-3">
+                <label class="form-label">Email</label>
+                <input type="email" name="email" class="form-control" required>
+            </div>
+        </div>
+
+        <div class="row">
+            <div class="col-md-4 mb-3">
+                <label class="form-label">Username</label>
+                <input type="text" name="username" class="form-control" placeholder="e.g. john.doe" required>
+            </div>
+            <div class="col-md-4 mb-3">
+                <label class="form-label">Password</label>
+                <input type="password" name="password" class="form-control">
+            </div>
+            <div class="col-md-4 mb-3">
+                <label class="form-label">Confirm Password</label>
+                <input type="password" name="confirm_password" class="form-control">
+            </div>
+        </div>
+
+        <div class="row">
+            <div class="col-md-4 mb-3">
+                <label class="form-label">Employee ID</label>
+                <input type="text" name="employee_id" class="form-control" required>
+            </div>
+            <div class="col-md-4 mb-3">
+                <label class="form-label">Phone</label>
+                <input type="text" name="phone" class="form-control" required>
+            </div>
+            <div class="col-md-4 mb-3">
+                <label class="form-label">Date of Birth</label>
+                <input type="date" name="dob" class="form-control" required>
+            </div>
+        </div>
+
+        <div class="row">
+            <div class="col-md-4 mb-3">
+                <label class="form-label">Gender</label>
+                <select name="gender" class="form-control" required>
+                    <option value="M">Male</option>
+                    <option value="F">Female</option>
+                    <option value="O">Other</option>
+                </select>
+            </div>
+            <div class="col-md-4 mb-3">
+                <label class="form-label">Blood Group</label>
+                <select name="blood_group" class="form-control">
+                    <option value="">-- Select --</option>
+                    <option value="O+">O+</option>
+                    <option value="O-">O-</option>
+                    <option value="A+">A+</option>
+                    <option value="A-">A-</option>
+                    <option value="B+">B+</option>
+                    <option value="B-">B-</option>
+                    <option value="AB+">AB+</option>
+                    <option value="AB-">AB-</option>
+                </select>
+            </div>
+            <div class="col-md-4 mb-3">
+                <label class="form-label">Photo</label>
+                <input type="file" name="photo" class="form-control" accept="image/*" required>
+            </div>
+        </div>
+
+        <div class="row">
+            <div class="col-md-4 mb-3">
+                <label class="form-label">Joining Date</label>
+                <input type="date" name="joining_date" class="form-control" required>
+            </div>
+            <div class="col-md-4 mb-3">
+                <label class="form-label">Experience Years</label>
+                <input type="number" name="experience_years" class="form-control" min="0">
+            </div>
+            <div class="col-md-4 mb-3">
+                <label class="form-label">Base Salary</label>
+                <input type="number" step="0.01" name="base_salary" class="form-control" required>
+            </div>
+        </div>
+
+        <div class="row">
+            <div class="col-md-4 mb-3">
+                <label class="form-label">Qualification</label>
+                <input type="text" name="qualification" class="form-control">
+            </div>
+            <div class="col-md-4 mb-3">
+                <label class="form-label">Aadhar</label>
+                <input type="text" name="aadhar" class="form-control">
+            </div>
+            <div class="col-md-4 mb-3">
+                <label class="form-label">PAN</label>
+                <input type="text" name="pan" class="form-control">
+            </div>
+        </div>
+
+        <div class="row">
+            <div class="col-md-6 mb-3">
+                <label class="form-label">Address</label>
+                <textarea name="address" class="form-control" rows="2"></textarea>
+            </div>
+            <div class="col-md-6 mb-3">
+                <label class="form-label">Specialization</label>
+                <select name="specialization" class="form-control">
+                    <option value="">-- Select Subject --</option>
+                    {% for subject in subjects %}
+                    <option value="{{ subject.id }}">{{ subject.name }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+        </div>
+
+        <button type="submit" class="btn btn-primary">Create</button>
+        <a href="{% url 'teachers:list' %}" class="btn btn-secondary">Cancel</a>
+    </form>
+</div>
+{% endblock %}

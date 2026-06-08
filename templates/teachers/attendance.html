@@ -1,0 +1,46 @@
+{% extends "base/layout.html" %}
+
+{% block title %}Teacher Attendance - SMS{% endblock %}
+{% block page_title %}Teacher Attendance{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <div class="card">
+        <div class="card-header">
+            <i class="fas fa-clipboard-list"></i> Mark Teacher Attendance
+        </div>
+        <div class="card-body">
+            <form method="post">
+                {% csrf_token %}
+                <div class="row mb-3">
+                    <div class="col-md-4">
+                        <label class="form-label">Attendance Date</label>
+                        <input type="date" name="date" value="{{ date }}" class="form-control" required>
+                    </div>
+                </div>
+                <div class="table-responsive">
+                    <table class="table table-bordered">
+                        <thead>
+                            <tr>
+                                <th>Teacher</th>
+                                <th>Present</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for teacher in teachers %}
+                            <tr>
+                                <td>{{ teacher.user.get_full_name }}</td>
+                                <td class="text-center">
+                                    <input type="checkbox" name="present_{{ teacher.id }}" checked>
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+                <button type="submit" class="btn btn-primary mt-3">Save Attendance</button>
+            </form>
+        </div>
+    </div>
+</div>
+{% endblock %}

@@ -1,0 +1,57 @@
+<!DOCTYPE html>
+<html lang="en">
+  {% load static %}
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>EduManage Pro</title>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:opsz,wght@14..32,300;400;500;600;700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+  <link rel="stylesheet" href="{% static 'css/smscss.css' %}">
+</head>
+<body>
+<div class="detail-page">
+  <div class="detail-container">
+    <a href="{% url 'accounts:index' %}" class="back-btn"><i class="fas fa-arrow-left"></i> Back to Home</a>
+    
+    <div class="detail-header">
+      <div class="feature-icon"><i class="fas fa-chalkboard"></i></div>
+      <h1>Teacher Portal</h1>
+      <p style="color: #5a6e7c; font-size: 1.1rem;">Empower teachers with tools for planning, grading, and communication</p>
+    </div>
+    
+    <div class="detail-content">
+      <h2>Overview</h2>
+      <p>The Teacher Portal streamlines daily classroom activities. Create lesson plans, take attendance digitally, grade assignments, manage timetables, and communicate with parents—all from one intuitive dashboard. Save up to 10 hours weekly on administrative tasks and focus more on teaching.</p>
+      
+      <h2>Key Features</h2>
+      <div class="detail-features">
+        <div class="detail-feature-item"><h4><i class="fas fa-check-circle" style="color:#06b6d4; margin-right:8px;"></i> Digital Lesson Planning</h4><p>Create, share, and collaborate on lesson plans with resource attachments</p></div>
+        <div class="detail-feature-item"><h4><i class="fas fa-check-circle" style="color:#06b6d4; margin-right:8px;"></i> One-Click Attendance</h4><p>Mark attendance digitally with analytics and absence reports</p></div>
+        <div class="detail-feature-item"><h4><i class="fas fa-check-circle" style="color:#06b6d4; margin-right:8px;"></i> Assignment Management</h4><p>Create, distribute, and grade assignments online with rubrics</p></div>
+        <div class="detail-feature-item"><h4><i class="fas fa-check-circle" style="color:#06b6d4; margin-right:8px;"></i> Timetable Management</h4><p>Drag-drop scheduling with automatic conflict detection</p></div>
+        <div class="detail-feature-item"><h4><i class="fas fa-check-circle" style="color:#06b6d4; margin-right:8px;"></i> Parent Communication</h4><p>Send progress reports, alerts, and messages directly to parents</p></div>
+        <div class="detail-feature-item"><h4><i class="fas fa-check-circle" style="color:#06b6d4; margin-right:8px;"></i> Performance Analytics</h4><p>Data-driven insights for personalized student attention</p></div>
+      </div>
+      
+      <h2>Benefits</h2>
+      <div class="detail-features">
+        <div class="detail-feature-item"><i class="fas fa-star" style="color:#06b6d4; margin-right:8px;"></i> Save 10+ hours weekly on administrative tasks</div>
+        <div class="detail-feature-item"><i class="fas fa-star" style="color:#06b6d4; margin-right:8px;"></i> Improve parent engagement and satisfaction</div>
+        <div class="detail-feature-item"><i class="fas fa-star" style="color:#06b6d4; margin-right:8px;"></i> Data-driven insights for personalized teaching</div>
+        <div class="detail-feature-item"><i class="fas fa-star" style="color:#06b6d4; margin-right:8px;"></i> Reduce manual paperwork by 75%</div>
+      </div>
+      <div style="background: linear-gradient(135deg, #1f7b8c10, #2c9c7c10); padding: 1.5rem; border-radius: 1rem; margin-top: 2rem; text-align: center;">
+        <h3 style="color: #06b6d4;">Ready to empower your teachers?</h3>
+        <button class="demo-btn" onclick="alert('Demo request sent! Our team will contact you within 24 hours.')">
+          Request a Demo <i class="fas fa-arrow-right"></i>
+        </button>
+      </div>
+    </div>
+  </div>
+</div>
+<footer>
+  <p>&copy; 2025 EduManage Pro — Teacher Portal Module. All rights reserved.</p>
+</footer>
+</body>
+</html>

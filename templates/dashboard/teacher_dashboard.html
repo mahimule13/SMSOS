@@ -1,0 +1,435 @@
+{% extends "base/layout.html" %}
+
+{% block title %}Teacher Dashboard - SMS{% endblock %}
+{% block page_title %}Teacher Dashboard{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <div class="row mb-3">
+        <div class="col-md-12">
+            <div class="card">
+                <div class="card-header">
+                    <i class="fas fa-bullhorn"></i> Active Announcements
+                </div>
+                <div class="card-body">
+{% if notices %}
+                        <div class="list-group">
+                            {% for n in notices|slice:":5" %}
+                            <div class="list-group-item">
+                                <div class="d-flex justify-content-between align-items-center">
+                                    <strong>{{ n.title }}</strong>
+                                    <span class="badge bg-primary">{{ n.priority|upper }}</span>
+                                </div>
+                                <p class="mb-1">{{ n.content|truncatechars:120 }}</p>
+                                <small class="text-muted">{{ n.created_at }}</small>
+                            </div>
+                            {% endfor %}
+                        </div>
+                    {% else %}
+                        <p class="text-muted mb-0">No active announcements.</p>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+    <!-- Statistics Cards -->
+    <div class="row">
+
+        <div class="col-md-3">
+            <div class="stat-card" style="border-left-color: #1e3a8a;">
+                <h5><i class="fas fa-user-graduate"></i> My Students</h5>
+                <div class="stat-value">{{ total_students }}</div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="stat-card" style="border-left-color: #0f766e;">
+                <h5><i class="fas fa-clipboard-check"></i> Class Attendance</h5>
+                <div class="stat-value">{{ attendance_percentage }}%</div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="stat-card" style="border-left-color: #059669;">
+                <h5><i class="fas fa-book"></i> Active Homework</h5>
+                <div class="stat-value">{{ active_homework }}</div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="stat-card" style="border-left-color: #d97706;">
+                <h5><i class="fas fa-hourglass"></i> Pending Submissions</h5>
+                <div class="stat-value">{{ pending_submissions }}</div>
+            </div>
+        </div>
+    </div>
+
+    <div class="row mt-3">
+        <div class="col-md-6">
+            <div class="card">
+                <div class="card-body text-center">
+                    <a href="{% url 'attendance:student_attendance' %}" class="btn btn-success btn-lg w-100">
+                        <i class="fas fa-clipboard-list"></i> Mark Daily Student Attendance
+                    </a>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-6 mt-3">
+    <div class="card">
+        <div class="card-body text-center">
+
+            <a href="{% url 'accounts:smsparent' %}" 
+               class="btn btn-warning btn-lg w-100">
+
+                <i class="fas fa-sms"></i> Send SMS to Parents
+
+            </a>
+
+        </div>
+    </div>
+</div>
+
+        <div class="col-md-6 mt-3">
+    <div class="card">
+        <div class="card-header bg-danger text-white">
+            <i class="fas fa-phone-volume"></i> IVR Voice Calls
+        </div>
+
+    <div class="card-body">
+
+        <!-- Pending / Partial Fee IVR (dynamic UI) -->
+        <div class="mb-3">
+            <h5 class="mb-2">Pending / Partial Fee Parents</h5>
+            <div class="d-flex gap-2 mb-3" style="flex-wrap: wrap;">
+                <button type="button" id="callAllPendingFeeParentsBtn" class="btn btn-danger btn-sm">
+                    <i class="fas fa-phone" aria-hidden="true"></i>
+                    Call All Pending Fee Parents
+                </button>
+            </div>
+            <div id="pendingFeeCallAllSummary" class="small text-muted mb-2"></div>
+        </div>
+
+        {% if pending_fee_rows %}
+        <div class="table-responsive" style="max-height: 360px; overflow: auto;">
+            <table class="table table-bordered align-middle">
+                <thead class="table-light">
+                    <tr>
+                        <th>Student Name</th>
+                        <th>Class</th>
+                        <th>Father Phone</th>
+                        <th>Mother Phone</th>
+                        <th>Amount Due</th>
+                        <th>Amount Paid</th>
+                        <th>Pending Amount</th>
+                        <th>Fee Status</th>
+                        <th>Action</th>
+                        <th>Status</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for row in pending_fee_rows %}
+                    <tr data-fee-row-id="{{ row.fee_collection_id }}">
+                        <td>{{ row.student_name }}</td>
+                        <td>{{ row.class_name }}</td>
+                        <td>{{ row.father_phone|default:"-" }}</td>
+                        <td>{{ row.mother_phone|default:"-" }}</td>
+                        <td>Rs. {{ row.amount_due }}</td>
+                        <td>Rs. {{ row.amount_paid }}</td>
+                        <td>Rs. {{ row.pending_amount }}</td>
+                        <td><span class="badge bg-warning text-dark">{{ row.fee_status|title }}</span></td>
+                        <td>
+                            <button type="button"
+                                    class="btn btn-sm btn-danger callParentBtn"
+                                    data-fee-collection-id="{{ row.fee_collection_id }}">
+                                <i class="fas fa-phone"></i> Call Parent
+                            </button>
+                        </td>
+                        <td>
+                            <span class="pending-fee-call-status text-muted" data-status-for="{{ row.fee_collection_id }}">-</span>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+        {% else %}
+            <p class="text-muted mb-0">No pending or partial fee records found.</p>
+        {% endif %}
+
+        <hr />
+
+        <!-- Absent Students Calls -->
+        <form action="{% url 'accounts:absent_calls' %}" method="post">
+
+            {% csrf_token %}
+
+            <button type="submit"
+                    class="btn btn-warning btn-lg w-100 mb-3">
+
+                <i class="fas fa-user-times"></i>
+
+                Call Absent Students Parents
+
+            </button>
+
+        </form>
+
+        <!-- General Announcement Calls -->
+        <!-- <form action="{% url 'accounts:general_calls' %}" method="post">
+
+            {% csrf_token %}
+
+            <button type="submit"
+                    class="btn btn-primary btn-lg w-100">
+
+                <i class="fas fa-bullhorn"></i>
+
+                Send General Voice Update
+
+            </button>
+
+        </form> -->
+
+    </div>
+</div>
+
+
+</div>
+
+        <div class="col-md-6">
+            <div class="card">
+                <div class="card-body text-center">
+                    <a href="{% url 'exams:teacher_mark_entry' %}" class="btn btn-info btn-lg w-100">
+                        <i class="fas fa-edit"></i> Upload / Enter Student Marks
+                    </a>
+
+
+                    <a href="{% url 'homework:create' %}" class="btn btn-secondary btn-lg w-100 mt-2">
+                        <i class="fas fa-plus-square"></i> Create Daily Homework
+                    </a>
+                    <a href="{% url 'homework:list' %}" class="btn btn-outline-secondary btn-lg w-100 mt-2">
+                        <i class="fas fa-book"></i> View My Homework
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    
+    <!-- My Subjects and Sections -->
+    <div class="row mt-4">
+        <div class="col-md-12">
+            <div class="card">
+                <div class="card-header">
+                    <i class="fas fa-book"></i> My Subject Allocations
+                </div>
+                <table class="table">
+                    <thead>
+                        <tr>
+                            <th>Section</th>
+                            <th>Subject</th>
+                            <th>Students</th>
+                            <th>Action</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for allocation in subject_allocations %}
+                        <tr>
+                            <td>{{ allocation.section }}</td>
+                            <td>{{ allocation.subject.name }}</td>
+                            <td><span class="badge bg-primary">{{ allocation.section.total_students }}</span></td>
+                            <td class="d-flex gap-2 flex-wrap">
+                                <a href="{% url 'attendance:student_attendance' %}?section={{ allocation.section.id }}" class="btn btn-sm btn-primary">
+                                    <i class="fas fa-clipboard-check"></i> Mark Attendance
+                                </a>
+                                <a href="{% url 'timetable:create' %}?section={{ allocation.section.id }}" class="btn btn-sm btn-secondary">
+                                    <i class="fas fa-calendar-plus"></i> Add Timetable
+                                </a>
+                                <a href="{% url 'timetable:section' allocation.section.id %}" class="btn btn-sm btn-outline-secondary">
+                                    <i class="fas fa-calendar-day"></i> View Timetable
+                                </a>
+                            </td>
+                        </tr>
+                        {% empty %}
+                        <tr>
+                            <td colspan="4" class="text-center text-muted">No subject allocations</td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Weekly Class Timetable -->
+    <div class="row mt-4">
+        <div class="col-md-12">
+            <div class="card">
+                <div class="card-header">
+                    <i class="fas fa-calendar"></i> My Weekly Class Timetable
+                </div>
+                <table class="table">
+                    <thead>
+                        <tr>
+                            <th>Day</th>
+                            <th>Time</th>
+                            <th>Subject</th>
+                            <th>Section</th>
+                            <th>Room</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for class in timetable %}
+                        <tr>
+                            <td><strong>{{ class.get_day_display }}</strong></td>
+                            <td>{{ class.start_time }} - {{ class.end_time }}</td>
+                            <td>{{ class.subject.name }}</td>
+                            <td>{{ class.section }}</td>
+                            <td>{{ class.room|default:"N/A" }}</td>
+                        </tr>
+                        {% empty %}
+                        <tr>
+                            <td colspan="5" class="text-center text-muted">No timetable scheduled</td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <!-- Exam Timetable + Marks -->
+    <div class="row mt-4">
+        <div class="col-md-12">
+            <div class="card">
+                <div class="card-header">
+                    <i class="fas fa-calendar-check"></i> Exam Timetable & Marks
+                </div>
+                <div class="card-body">
+                    <div class="alert alert-info mb-3">
+                        Exam timetable creation UI will be shown here (exam type/date/time/section/subjects) and then marks entry will be enabled for the created exam.
+                    </div>
+
+                    <a href="{% url 'exams:teacher_exam_schedule_create' %}" class="btn btn-primary w-100 mb-2">
+                        <i class="fas fa-calendar-plus"></i> Create Exam Timetable
+                    </a>
+                    <a href="{% url 'exams:teacher_mark_entry' %}" class="btn btn-info w-100">
+                        <i class="fas fa-edit"></i> Enter Marks (for active exam)
+                    </a>
+
+
+                    <p class="text-muted mt-2 mb-0" style="font-size: 0.95rem;">
+                        After you add the exam timetable from the dedicated teacher exam-schedule page, students will see it on their dashboard by section.
+                    </p>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+
+{# Teacher Pending Fee IVR - dynamic calls JS #}
+{# Teacher Pending Fee IVR - dynamic calls JS #}
+<script>
+(function(){
+  const csrftokenEl = document.querySelector('[name=csrfmiddlewaretoken]');
+
+  const csrftoken = csrftokenEl ? csrftokenEl.value : '';
+
+
+  function setStatus(feeId, text, klass){
+    const el = document.querySelector(`[data-status-for="${feeId}"]`);
+    if(!el) return;
+    el.textContent = text;
+    el.className = 'pending-fee-call-status ' + (klass || 'text-muted');
+  }
+
+  async function postJson(url, body){
+    const res = await fetch(url, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'X-CSRFToken': csrftoken
+      },
+      body: JSON.stringify(body || {})
+    });
+    return await res.json();
+  }
+
+  document.addEventListener('DOMContentLoaded', () => {
+    const pendingAllBtn = document.getElementById('callAllPendingFeeParentsBtn');
+    const pendingAllSummary = document.getElementById('pendingFeeCallAllSummary');
+
+    document.querySelectorAll('.callParentBtn').forEach(btn => {
+      btn.addEventListener('click', async () => {
+        const feeId = btn.getAttribute('data-fee-collection-id');
+        if(!feeId) return;
+
+        setStatus(feeId, 'Calling...', 'text-primary');
+        btn.disabled = true;
+
+        try{
+          const url = '{% url "accounts:call_parent_for_fee_student" %}';
+          const data = await postJson(url, {fee_collection_id: feeId});
+
+          const already = (data.already_called || []).length > 0;
+          if(!data.ok){
+            setStatus(feeId, 'Failed: ' + (data.error || 'Twilio error'), 'text-danger');
+          }else if(already){
+            setStatus(feeId, 'Already Called', 'text-muted');
+          }else if((data.failed || 0) > 0){
+            setStatus(feeId, 'Failed', 'text-danger');
+          }else{
+            setStatus(feeId, 'Call Sent', 'text-success');
+          }
+
+        }catch(e){
+          setStatus(feeId, 'Failed', 'text-danger');
+        }finally{
+          btn.disabled = false;
+        }
+      });
+    });
+
+    if(pendingAllBtn){
+      pendingAllBtn.addEventListener('click', async () => {
+        pendingAllBtn.disabled = true;
+        if(pendingAllSummary) pendingAllSummary.textContent = 'Calling...';
+
+        try{
+          const url = '{% url "accounts:call_all_pending_fee_parents" %}';
+          const data = await postJson(url, {});
+
+          if(pendingAllSummary){
+            if(!data.ok){
+              pendingAllSummary.textContent = 'Failed: ' + (data.error || 'Twilio error');
+            }else{
+              const alreadyCount = (data.already_called || []).length;
+
+              // Show a compact list of failure reasons if available
+              const reasons = [];
+              if(Array.isArray(data.results)){
+                data.results.forEach(r => {
+                  if(r && r.status === 'FAILED'){
+                    const fr = r.failure_reason || (r.twilio_error_message || r.error || 'Twilio error');
+                    if(fr && !reasons.includes(fr)) reasons.push(fr);
+                  }
+                });
+              }
+
+              const reasonSummary = reasons.length ? ` | Reasons: ${reasons.slice(0,3).join(' / ')}${reasons.length>3?'...':''}` : '';
+              pendingAllSummary.textContent = `Call Sent. Successful: ${data.success || 0}, Failed: ${data.failed || 0}, Already Called: ${alreadyCount}${reasonSummary}`;
+            }
+          }
+
+
+        }catch(e){
+          if(pendingAllSummary) pendingAllSummary.textContent = 'Failed';
+        }finally{
+          pendingAllBtn.disabled = false;
+        }
+      });
+    }
+  });
+})();
+</script>
+{% endblock %}
+
+

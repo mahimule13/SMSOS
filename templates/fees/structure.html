@@ -1,0 +1,97 @@
+{% extends "base/layout.html" %}
+
+{% block title %}Fee Structure - SMS{% endblock %}
+{% block page_title %}Fee Structure{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+  <div class="row mb-4">
+    <div class="col-md-12">
+      <div class="card">
+        <div class="card-header">
+          <i class="fas fa-file-invoice" style="margin-right:8px;"></i>
+          Add Fee Structure
+        </div>
+        <div class="card-body">
+
+          {% if messages %}
+            {% for message in messages %}
+              <div class="alert alert-{{ message.tags }}">{{ message }}</div>
+            {% endfor %}
+          {% endif %}
+
+          <form method="post">
+            {% csrf_token %}
+
+            <div class="row">
+              <div class="col-md-4 mb-3">
+                <label class="form-label">Class</label>
+                <input type="text" name="class_name" class="form-control" placeholder="e.g. Class 1" required>
+              </div>
+
+              <div class="col-md-4 mb-3">
+                <label class="form-label">Fee Type</label>
+                <select name="fee_type" class="form-select" required>
+                  <option value="tuition">Tuition Fee</option>
+                  <option value="term1">Term 1 Fee</option>
+                  <option value="term2">Term 2 Fee</option>
+                  <option value="books">Books Fee</option>
+                  <option value="library">Library Fee</option>
+                </select>
+              </div>
+
+              <div class="col-md-4 mb-3">
+                <label class="form-label">Amount</label>
+                <input type="number" name="amount" step="0.01" min="0" class="form-control" required>
+              </div>
+            </div>
+
+            <button type="submit" class="btn btn-primary">
+              <i class="fas fa-plus"></i> Add Fee
+            </button>
+          </form>
+
+
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="row">
+    <div class="col-md-12">
+      <h5 class="mb-3">All Fee Structures</h5>
+      <div class="card">
+        <div class="card-body">
+          {% if structures %}
+            <div class="table-responsive">
+              <table class="table table-sm table-bordered">
+                <thead class="table-light">
+                  <tr>
+                    <th>Class</th>
+                    <th>Fee Type</th>
+                    <th>Amount</th>
+                    <th>Created</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {% for s in structures %}
+                    <tr>
+                      <td>{{ s.class_name }}</td>
+                      <td>{{ s.get_fee_type_display }}</td>
+                      <td>₹{{ s.amount }}</td>
+                      <td>{{ s.created_at|date:"Y-m-d" }}</td>
+                    </tr>
+                  {% endfor %}
+                </tbody>
+              </table>
+            </div>
+          {% else %}
+            <p class="text-muted mb-0">No fee structures found.</p>
+          {% endif %}
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}
+

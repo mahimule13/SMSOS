@@ -1,0 +1,226 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Send SMS to Parents</title>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+</head>
+<body style="background:#f8fafc;">
+
+<nav class="navbar navbar-dark" style="background:#0f172a;">
+  <div class="container">
+    <span class="navbar-brand">SchoolOS - Parent SMS</span>
+  </div>
+</nav>
+
+<div class="container py-4">
+  <div class="row justify-content-center">
+    <div class="col-lg-10">
+
+      {% if messages %}
+        {% for message in messages %}
+          <div class="alert alert-{{ message.tags }}" role="alert">{{ message }}</div>
+        {% endfor %}
+      {% endif %}
+
+      <div class="card shadow-sm">
+        <div class="card-body p-4">
+          <h3 class="mb-2">SMS to Students (Father by default)</h3>
+          <p class="text-muted mb-4">
+            Select students, then choose which contact numbers to send SMS. Message supports placeholder <b>{name}</b>.
+          </p>
+
+          <form method="POST">
+            {% csrf_token %}
+
+            <!-- Step 1: Students -->
+            <div class="mb-4">
+                <h5 class="mb-3">Select Students</h5>
+
+<div class="row mb-3">
+
+  <div class="col-md-4">
+
+    <label class="form-label">Filter Students</label>
+
+    <select class="form-select" name="student_filter">
+
+      <option value="all">All Students</option>
+
+      <option value="pending">
+        Fee Pending Students
+      </option>
+
+    </select>
+
+  </div>
+
+  <div class="col-md-2 d-flex align-items-end">
+
+    <button type="submit"
+            name="action"
+            value="load_students"
+            class="btn btn-outline-primary w-100">
+
+      Refresh List
+
+    </button>
+
+  </div>
+
+</div>
+                <h5 class="mb-0">Select Students</h5>
+                <button type="submit" name="action" value="load_students" class="btn btn-outline-primary btn-sm">
+                  Refresh List
+                </button>
+              </div>
+              <hr />
+
+              <div class="row g-3">
+                <div class="col-md-12">
+                  <div class="form-text mb-3">Showing only active students.</div>
+                  <div class="form-check mb-3">
+  <input class="form-check-input" type="checkbox" id="select-all">
+  
+  <label class="form-check-label" for="select-all">
+    Select All Students
+  </label>
+</div>
+                  <div class="border rounded p-3" style="max-height: 280px; overflow:auto; background:#fff;">
+                    {% if students %}
+                      {% for s in students %}
+                        <div class="form-check mb-2">
+                          <input class="form-check-input" type="checkbox" value="{{ s.id }}" name="student_ids" id="stu_{{ s.id }}"
+                            {% if s.id|stringformat:'s' in selected_student_ids %}checked{% endif %}>
+                          <label class="form-check-label" for="stu_{{ s.id }}">
+                            <b>{{ s.user.get_full_name|default:s.user.username }}</b>
+                            <span class="text-muted">(ID: {{ s.student_id }}, Roll: {{ s.roll_number }})</span>
+                          </label>
+                        </div>
+                      {% endfor %}
+                    {% else %}
+                      <div class="text-muted">No students found.</div>
+                    {% endif %}
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <!-- Step 2: Contacts -->
+            <div class="mb-4">
+              <div class="d-flex align-items-center justify-content-between">
+                <h5 class="mb-0">Select Contacts for Chosen Students</h5>
+                <button type="submit" name="action" value="show_contacts" class="btn btn-primary btn-sm">
+                  Show Contacts
+                </button>
+              </div>
+              <hr />
+
+              {% if selected_students %}
+                <div class="border rounded p-3" style="background:#fff;">
+                  <div class="mb-3 text-muted">
+                    Default contact type: <b>Father</b> (approved by you).
+                  </div>
+
+                  <div class="row g-3">
+                    {% for s in selected_students %}
+                      <div class="col-md-6">
+                        <div class="border rounded p-3 h-100">
+                          <div class="d-flex justify-content-between align-items-start mb-2">
+                            <div>
+                              <div><b>{{ s.user.get_full_name|default:s.user.username }}</b></div>
+                              <div class="text-muted small">{{ s.student_id }} • {{ s.roll_number }}</div>
+                            </div>
+                          </div>
+
+                          {% comment %}
+                            Father by default
+                          {% endcomment %}
+
+                          <div class="form-check mb-2">
+                            <input class="form-check-input" type="checkbox" name="contact_phone" value="father:{{ s.id }}" id="f_{{ s.id }}" checked>
+                            <label class="form-check-label" for="f_{{ s.id }}">
+                              <b>{{ s.father_name }}</b>
+                              <span class="text-muted">({{ s.father_phone }})</span>
+                            </label>
+                          </div>
+
+                          <div class="form-check mb-2">
+                            <input class="form-check-input" type="checkbox" name="contact_phone" value="mother:{{ s.id }}" id="m_{{ s.id }}"
+                              {% if s.mother_phone %}{% else %}disabled{% endif %}>
+                            <label class="form-check-label" for="m_{{ s.id }}">
+                              Mother: <b>{{ s.mother_name }}</b>
+                              <span class="text-muted">({{ s.mother_phone }})</span>
+                            </label>
+                          </div>
+
+                          <div class="form-check">
+                            <input class="form-check-input" type="checkbox" name="contact_phone" value="guardian:{{ s.id }}" id="g_{{ s.id }}"
+                              {% if not s.guardian_phone %}disabled{% endif %}>
+                            <label class="form-check-label" for="g_{{ s.id }}">
+                              Guardian: <b>{{ s.guardian_name|default:'—' }}</b>
+                              <span class="text-muted">({{ s.guardian_phone|default:'—' }})</span>
+                            </label>
+                          </div>
+
+                        </div>
+                      </div>
+                    {% endfor %}
+                  </div>
+                </div>
+              {% else %}
+                <div class="text-muted">
+                  Select students above and click <b>Show Contacts</b>.
+                </div>
+              {% endif %}
+            </div>
+
+            <!-- Step 3: Message -->
+            <div class="mb-4">
+              <h5 class="mb-3">SMS Description / Message</h5>
+
+              <div class="mb-3">
+                <label class="form-label">Message</label>
+                <textarea class="form-control" rows="5" name="message" placeholder="Hello {name}, this is an important update from the school...">{{ form.message.value|default:'' }}</textarea>
+                {% if form.message.errors %}
+                  <div class="text-danger small">{{ form.message.errors }}</div>
+                {% endif %}
+                <div class="form-text">
+                  Use <b>{name}</b> to personalize with the selected contact name.
+                </div>
+              </div>
+            </div>
+
+            <div class="d-grid">
+              <button type="submit" name="action" value="send_sms" class="btn btn-success btn-lg">
+                Send Message
+              </button>
+            </div>
+
+          </form>
+
+        </div>
+      </div>
+
+      <div class="mt-3 text-muted small">
+        Note: This demo uses Twilio if configured; otherwise it falls back to a stub.
+      </div>
+
+    </div>
+  </div>
+</div>
+<script>
+document.getElementById('select-all').onclick = function() {
+
+    let checkboxes = document.getElementsByName('student_ids');
+
+    for (let checkbox of checkboxes) {
+        checkbox.checked = this.checked;
+    }
+};
+</script>
+</body>
+</html>
+

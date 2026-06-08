@@ -1,0 +1,57 @@
+{% extends "base/layout.html" %}
+
+{% block title %}Student Attendance - SMS{% endblock %}
+{% block page_title %}Student Attendance{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <div class="card">
+        <div class="card-header">
+            <i class="fas fa-clipboard-check"></i> Mark Student Attendance
+        </div>
+        <div class="card-body">
+            <form method="post">
+                {% csrf_token %}
+                <div class="row mb-3">
+                    <div class="col-md-4">
+                        <label class="form-label">Attendance Date</label>
+                        <input type="date" name="date" value="{{ date }}" class="form-control" required>
+                    </div>
+                    <div class="col-md-4">
+                        <label class="form-label">Section</label>
+                        <select name="section" class="form-select">
+                            <option value="">All Sections</option>
+                            {% for section in sections %}
+                            <option value="{{ section.id }}" {% if selected_section|stringformat:'s' == section.id|stringformat:'s' %}selected{% endif %}>{{ section }}</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                </div>
+                <div class="table-responsive">
+                    <table class="table table-bordered">
+                        <thead>
+                            <tr>
+                                <th>Student</th>
+                                <th>Section</th>
+                                <th>Present</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for student in students %}
+                            <tr>
+                                <td>{{ student.user.get_full_name }}</td>
+                                <td>{{ student.section }}</td>
+                                <td class="text-center">
+                                    <input type="checkbox" name="present_{{ student.id }}" checked>
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+                <button type="submit" class="btn btn-primary mt-3">Save Attendance</button>
+            </form>
+        </div>
+    </div>
+</div>
+{% endblock %}

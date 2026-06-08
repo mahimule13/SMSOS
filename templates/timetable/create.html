@@ -1,0 +1,90 @@
+{% extends "base/layout.html" %}
+
+{% block title %}Create Weekly Timetable - SMS{% endblock %}
+{% block page_title %}Create Weekly Timetable{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <div class="row">
+        <div class="col-md-10 mx-auto">
+            <div class="card">
+                <div class="card-header">
+                    <i class="fas fa-calendar-plus"></i> Create Weekly Timetable Entry
+                </div>
+                <div class="card-body">
+                    <form method="post">
+                        {% csrf_token %}
+                        <div class="row g-3">
+                            <div class="col-md-6">
+                                <label class="form-label">Section</label>
+                                <select name="section" class="form-control" required>
+                                    {% for section in sections %}
+                                        <option value="{{ section.id }}" {% if section.id|stringformat:"s" == selected_section_id %}selected{% endif %}>
+                                            {{ section.class_model }} - {{ section.name }}
+                                        </option>
+                                    {% endfor %}
+                                </select>
+                            </div>
+                            <div class="col-md-6">
+                                <label class="form-label">Subject</label>
+                                <select name="subject" class="form-control" required>
+                                    {% for subject in subjects %}
+                                        <option value="{{ subject.id }}">{{ subject.name }}</option>
+                                    {% endfor %}
+                                </select>
+                            </div>
+                            <div class="col-md-4">
+                                <label class="form-label">Week Start Date</label>
+                                <input type="date" name="week_start_date" class="form-control" value="{{ week_start_date|default:None }}" required>
+                            </div>
+                            <div class="col-md-4">
+                                <label class="form-label">Day</label>
+                                <select name="day" class="form-control" required>
+                                    <option value="monday">Monday</option>
+                                    <option value="tuesday">Tuesday</option>
+                                    <option value="wednesday">Wednesday</option>
+                                    <option value="thursday">Thursday</option>
+                                    <option value="friday">Friday</option>
+                                    <option value="saturday">Saturday</option>
+                                    <option value="sunday">Sunday</option>
+                                </select>
+                            </div>
+                            <div class="col-md-2">
+                                <label class="form-label">Start Time</label>
+                                <input type="time" name="start_time" class="form-control" required>
+                            </div>
+                            <div class="col-md-2">
+                                <label class="form-label">End Time</label>
+                                <input type="time" name="end_time" class="form-control" required>
+                            </div>
+                            <div class="col-md-12">
+                                <label class="form-label">Room</label>
+                                <input type="text" name="room" class="form-control" placeholder="Optional room or lab">
+                            </div>
+                        </div>
+
+                        <div class="mt-4 d-flex justify-content-between align-items-center">
+                            <button type="submit" class="btn btn-primary">
+                                <i class="fas fa-save"></i> Save Timetable Entry
+                            </button>
+                            {% if selected_section_id %}
+                                <a href="{% url 'timetable:section' selected_section_id %}" class="btn btn-outline-secondary">
+                                    <i class="fas fa-calendar-day"></i> View Section Timetable
+                                </a>
+                            {% else %}
+                                <a href="{% url 'dashboard:teacher_dashboard' %}" class="btn btn-outline-secondary">
+                                    <i class="fas fa-arrow-left"></i> Back to Dashboard
+                                </a>
+                            {% endif %}
+                        </div>
+                    </form>
+
+                    <div class="alert alert-info mt-4">
+                        Use the same week start date for all classes in a given week. Student dashboards show the timetable for their section and current calendar week.
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

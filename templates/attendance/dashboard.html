@@ -1,0 +1,184 @@
+{% extends "base/layout.html" %}
+
+{% block title %}Attendance Dashboard - SMS{% endblock %}
+{% block page_title %}Attendance Dashboard{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <div class="row mb-4">
+        <div class="col-md-8">
+            <div class="card">
+                <div class="card-header d-flex justify-content-between align-items-center">
+                    <h4 class="mb-0">Attendance Analytics</h4>
+                    <a href="{% url 'attendance:reports' %}" class="btn btn-sm btn-outline-secondary">View Reports</a>
+                </div>
+                <div class="card-body">
+                    <p>Track attendance for teachers, principals, and students from one place.</p>
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <div class="stat-card" style="border-left-color: #0f766e;">
+                                <h5><i class="fas fa-user-graduate"></i> Present Students Today</h5>
+                                <div class="stat-value">{{ student_present_today }}</div>
+                                <div class="stat-change">of {{ total_students }} active students</div>
+                            </div>
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <div class="stat-card" style="border-left-color: #0ea5e9;">
+                                <h5><i class="fas fa-chalkboard-teacher"></i> Present Teachers Today</h5>
+                                <div class="stat-value">{{ teacher_present_today }}</div>
+                                <div class="stat-change">of {{ total_teachers }} active teachers</div>
+                            </div>
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <div class="stat-card" style="border-left-color: #4338ca;">
+                                <h5><i class="fas fa-user-tie"></i> Present Principals Today</h5>
+                                <div class="stat-value">{{ principal_present_today }}</div>
+                                <div class="stat-change">of {{ total_principals }} principal profiles</div>
+                            </div>
+                        </div>
+                    </div>
+
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-4">
+            <div class="card">
+                <div class="card-header">
+                    <h4 class="mb-0">Quick Actions</h4>
+                </div>
+                <div class="card-body">
+                    <p>Use this panel to mark attendance.</p>
+                    <form method="post" id="attendance-form">
+                        {% csrf_token %}
+
+                        <div class="mb-3">
+                            <label for="attendanceRole" class="form-label">Attendance Target</label>
+                            <select id="attendanceRole" name="role" class="form-control">
+                                <option value="teacher">Teacher</option>
+                                <option value="student">Student</option>
+                            </select>
+                        </div>
+
+                        <div class="mb-3 d-none" id="student-select">
+                            <label for="studentPerson" class="form-label">Select Student</label>
+                            <select id="studentPerson" name="person" class="form-control">
+                                {% for student in students %}
+                                    <option value="{{ student.id }}">{{ student.user.get_full_name }} ({{ student.student_id }})</option>
+
+                                {% endfor %}
+                            </select>
+                        </div>
+
+                        <div class="mb-3" id="teacher-select">
+                            <label for="teacherPerson" class="form-label">Select Teacher</label>
+                            <select id="teacherPerson" name="person" class="form-control">
+                                {% for teacher in teachers %}
+                                    <option value="{{ teacher.id }}">{{ teacher.user.get_full_name }} ({{ teacher.employee_id }})</option>
+                                {% endfor %}
+                            </select>
+                        </div>
+
+
+
+                        <div class="mb-3">
+                            <label for="attendanceDate" class="form-label">Attendance Date</label>
+                            <input id="attendanceDate" type="date" name="date" value="{{ today|date:'Y-m-d' }}" class="form-control" required>
+                        </div>
+
+                        <div class="mb-3">
+                            <label class="form-label d-block mb-2">Mark Attendance As</label>
+                            <div class="d-flex gap-3 align-items-center">
+                                <div class="form-check">
+                                    <input class="form-check-input" type="radio" name="attendance_mode" id="mode_teacher" value="teacher" checked>
+                                    <label class="form-check-label" for="mode_teacher">Teacher</label>
+                                </div>
+                                <div class="form-check">
+                                    <input class="form-check-input" type="radio" name="attendance_mode" id="mode_student" value="student">
+                                    <label class="form-check-label" for="mode_student">Student</label>
+                                </div>
+                            </div>
+                        </div>
+
+                        <script>
+                            // When mode switches, keep dropdown UI in sync.
+                            // attendanceRole drives which select is visible; we update it from attendance_mode.
+                            (function() {
+                                const roleSelect = document.getElementById('attendanceRole');
+                                const modeTeacher = document.getElementById('mode_teacher');
+                                const modeStudent = document.getElementById('mode_student');
+
+                                function sync() {
+                                    if (!roleSelect) return;
+                                    if (modeTeacher && modeTeacher.checked) {
+                                        roleSelect.value 
+                                        = 'teacher';
+                                    } else if (modeStudent && modeStudent.checked) {
+                                        roleSelect.value = 'student';
+                                    }
+                                    // Trigger existing visibility logic.
+                                    if (typeof setVisibility === 'function') {
+                                        setVisibility();
+                                    }
+                                }
+
+                                if (modeTeacher) modeTeacher.addEventListener('change', sync);
+                                if (modeStudent) modeStudent.addEventListener('change', sync);
+                                sync();
+                            })();
+                        </script>
+
+
+                        <button type="submit" class="btn btn-primary w-100">Mark Attendance</button>
+
+                    </form>
+
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="row">
+        <div class="col-md-12">
+            <div class="card">
+                <div class="card-header">
+                    <h4 class="mb-0">Attendance Summary</h4>
+                </div>
+                <div class="card-body">
+                    <p>Use the attendance analytics page to track staff presence and generate reports across the school.</p>
+                    <ul class="list-group list-group-flush">
+                        <li class="list-group-item">Teachers present today: <strong>{{ teacher_present_today }}</strong></li>
+                        <li class="list-group-item">Principals present today: <strong>{{ principal_present_today }}</strong></li>
+                        <li class="list-group-item">Total active teachers: <strong>{{ total_teachers }}</strong></li>
+                        <li class="list-group-item">Principal profiles: <strong>{{ total_principals }}</strong></li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    const attendanceRole = document.getElementById('attendanceRole');
+    const teacherSelect = document.getElementById('teacher-select');
+    const studentSelect = document.getElementById('student-select');
+
+
+    function setVisibility() {
+        const role = attendanceRole.value;
+
+        if (role === 'teacher') {
+            teacherSelect.classList.remove('d-none');
+            studentSelect.classList.add('d-none');
+        } else if (role === 'student') {
+            teacherSelect.classList.add('d-none');
+            studentSelect.classList.remove('d-none');
+        }
+    }
+
+
+    attendanceRole.addEventListener('change', setVisibility);
+    setVisibility();
+</script>
+
+{% endblock %}

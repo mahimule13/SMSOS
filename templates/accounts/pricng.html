@@ -1,0 +1,750 @@
+<!DOCTYPE html>
+<html lang="en">
+{% load static %}
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Pricing — Potla SMS</title>
+
+    <!-- Bootstrap -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+
+    <!-- Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700;800&display=swap" rel="stylesheet">
+
+    <!-- Font Awesome -->
+    <link rel="stylesheet"
+          href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css"/>
+
+<style>
+
+:root{
+  --primary:#4f46e5;
+  --secondary:#06b6d4;
+  --accent:#22c55e;
+  --dark:#0f172a;
+  --light:#f8fafc;
+  --text:#1e293b;
+  --muted:#64748b;
+  --radius:16px;
+  --transition:all .3s ease;
+}
+
+*{
+  margin:0;
+  padding:0;
+  box-sizing:border-box;
+}
+
+body{
+  font-family:'Inter',sans-serif;
+  background:#f5f7fb;
+  color:var(--text);
+}
+
+/* ================= NAVBAR ================= */
+
+.navbar{
+  background:rgba(15,23,42,.9);
+  backdrop-filter:blur(12px);
+  padding:14px 0;
+}
+
+.navbar-brand{
+  color:#fff;
+  font-weight:800;
+  font-size:1.5rem;
+}
+
+.navbar-brand span{
+  color:var(--secondary);
+}
+
+.nav-link{
+  color:#dbe4ff !important;
+  margin-left:10px;
+  transition:var(--transition);
+}
+
+.nav-link:hover{
+  color:#fff !important;
+}
+
+.btn-primary{
+  background:linear-gradient(135deg,var(--primary),var(--secondary));
+  border:none;
+  border-radius:12px;
+}
+
+.btn-primary:hover{
+  transform:translateY(-2px);
+}
+
+/* ================= HERO ================= */
+
+.hero{
+  padding:80px 20px 50px;
+  text-align:center;
+}
+
+.hero h1{
+  font-size:3rem;
+  font-weight:800;
+  margin-bottom:15px;
+}
+
+.hero p{
+  color:var(--muted);
+  max-width:700px;
+  margin:auto;
+  font-size:1.05rem;
+}
+
+/* ================= PRICING ================= */
+
+.pricing-section{
+    padding:70px 20px;
+}
+
+.price-card{
+    background:#fff;
+    border-radius:20px;
+    padding:30px;
+    box-shadow:0 8px 25px rgba(0,0,0,0.08);
+    transition:0.3s ease;
+    height:100%;
+}
+
+.price-card:hover{
+    transform:translateY(-8px);
+}
+
+.plan-title{
+    font-size:1.5rem;
+    font-weight:800;
+    margin-bottom:10px;
+}
+
+.standard-text{
+    color:#2563eb;
+}
+
+.premium-text{
+    color:#16a34a;
+}
+
+.ultimate-text{
+    color:#ca8a04;
+}
+
+.price{
+    font-size:2.2rem;
+    font-weight:800;
+    margin-bottom:0;
+}
+
+.gst-text{
+    color:#64748b;
+    margin-top:5px;
+}
+
+.billing{
+    color:#94a3b8;
+    margin-top:5px;
+}
+
+.plan-btn{
+    border:none;
+    padding:12px;
+    border-radius:12px;
+    color:#fff;
+    font-weight:700;
+}
+
+.standard-btn{
+    background:#2563eb;
+}
+
+.premium-btn{
+    background:#16a34a;
+}
+
+.ultimate-btn{
+    background:#ca8a04;
+}
+
+.contact-btn{
+    border:none;
+    padding:12px;
+    border-radius:12px;
+    font-weight:700;
+    background:#e2e8f0;
+}
+
+.plan-features{
+    list-style:none;
+    padding:0;
+    margin-top:20px;
+}
+
+.plan-features li{
+    margin-bottom:12px;
+    color:#475569;
+}
+
+.disabled{
+    text-decoration:line-through;
+    opacity:0.5;
+}
+/* ================= FEATURES ================= */
+
+.features{
+  padding:40px 20px 70px;
+}
+
+.section-title{
+  text-align:center;
+  font-weight:800;
+  margin-bottom:40px;
+}
+
+.feature-box{
+  background:#fff;
+  border-radius:16px;
+  padding:20px;
+  display:flex;
+  align-items:center;
+  gap:16px;
+  box-shadow:0 5px 18px rgba(0,0,0,.05);
+  transition:var(--transition);
+  height:100%;
+}
+
+.feature-box:hover{
+  transform:translateY(-5px);
+}
+
+.feature-icon{
+  width:55px;
+  height:55px;
+  border-radius:14px;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  font-size:24px;
+  background:#eef2ff;
+}
+
+/* ================= REVIEWS ================= */
+
+.reviews{
+  padding:70px 20px;
+}
+
+.review-wrapper{
+  overflow:hidden;
+}
+
+.review-track{
+  display:flex;
+  gap:25px;
+  animation:scroll 25s linear infinite;
+}
+
+.review-card{
+  min-width:320px;
+  background:#fff;
+  border-radius:18px;
+  padding:25px;
+  box-shadow:0 8px 20px rgba(0,0,0,.08);
+}
+
+.review-card p{
+  color:var(--muted);
+}
+
+.review-card h5{
+  margin-top:15px;
+  margin-bottom:3px;
+}
+
+.stars{
+  color:#06b6d4;
+  margin-bottom:10px;
+}
+
+@keyframes scroll{
+  from{
+    transform:translateX(0);
+  }
+  to{
+    transform:translateX(-50%);
+  }
+}
+
+/* ================= FOOTER ================= */
+
+footer{
+  background:var(--dark);
+  color:#cbd5e1;
+  padding-top:60px;
+}
+
+.footer-heading{
+  color:#fff;
+  font-weight:700;
+  margin-bottom:20px;
+}
+
+.footer-links{
+  list-style:none;
+  padding:0;
+}
+
+.footer-links li{
+  margin-bottom:12px;
+}
+
+.footer-links a{
+  text-decoration:none;
+  color:#cbd5e1;
+  transition:var(--transition);
+}
+
+.footer-links a:hover{
+  color:#fff;
+  padding-left:5px;
+}
+
+.social-icons{
+  display:flex;
+  gap:12px;
+}
+
+.social-link{
+  width:42px;
+  height:42px;
+  border-radius:10px;
+  background:rgba(255,255,255,.08);
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  color:#fff;
+  text-decoration:none;
+  transition:var(--transition);
+}
+
+.social-link:hover{
+  background:var(--secondary);
+  color:#000;
+  transform:translateY(-4px);
+}
+
+.footer-bottom{
+  border-top:1px solid rgba(255,255,255,.1);
+  margin-top:40px;
+  padding:20px 0;
+  text-align:center;
+  color:#94a3b8;
+}
+
+@media(max-width:768px){
+
+  .hero h1{
+    font-size:2.2rem;
+  }
+
+  .review-card{
+    min-width:280px;
+  }
+
+}
+
+</style>
+</head>
+
+<body>
+
+<!-- NAVBAR -->
+
+<nav class="navbar navbar-expand-lg sticky-top">
+    <div class="container">
+
+        <a class="navbar-brand" href="{% url 'accounts:index' %}">
+            School<span>OS</span>
+        </a>
+
+        <button class="navbar-toggler bg-light"
+                type="button"
+                data-bs-toggle="collapse"
+                data-bs-target="#navbarNav">
+            <span class="navbar-toggler-icon"></span>
+        </button>
+
+        <div class="collapse navbar-collapse" id="navbarNav">
+
+            <ul class="navbar-nav ms-auto align-items-lg-center">
+
+                <li class="nav-item">
+                    <a class="nav-link" href="{% url 'accounts:index' %}">Home</a>
+                </li>
+
+                <li class="nav-item">
+                    <a class="nav-link" href="{% url 'accounts:smsabout' %}">About</a>
+                </li>
+
+                <li class="nav-item">
+                    <a class="nav-link" href="{% url 'accounts:pricing' %}">Pricing</a>
+                </li>
+
+                <li class="nav-item">
+                    <a class="nav-link" href="{% url 'accounts:services'%}">Services</a>
+                </li>
+
+                <li class="nav-item">
+                    <a class="btn btn-outline-light ms-lg-3"
+                       href="{% url 'accounts:login' %}">
+                        Login
+                    </a>
+                </li>
+
+                <li class="nav-item">
+                    <a class="btn btn-primary ms-lg-2"
+                       href="{% url 'accounts:register' %}">
+                        Register
+                    </a>
+                </li>
+
+            </ul>
+
+        </div>
+    </div>
+</nav>
+
+<!-- HERO -->
+
+<section class="hero">
+    <h1>Affordable Pricing for Smart Institutions</h1>
+    <p>
+        Choose the perfect plan for your school management needs with secure cloud hosting and powerful features.
+    </p>
+</section>
+<section class="pricing-section">
+<div class="container">
+
+<div class="row justify-content-center g-4">
+
+    <!-- STANDARD -->
+    <div class="col-lg-4 col-md-6">
+        <div class="price-card standard">
+
+            <h1 class="plan-title standard-text">STANDARD</h1>
+
+            <h2 class="price">₹50,000</h2>
+
+            <h5 class="gst-text">+ GST</h5>
+
+            <p class="billing">(billed yearly)</p>
+
+            <div class="d-grid gap-2 mt-4">
+                <a href=""><button class="plan-btn standard-btn">
+                    Get Standard
+                </button></a>
+
+                <button class="contact-btn">
+                    Contact Us
+                </button>
+            </div>
+
+            <hr>
+
+            <ul class="plan-features">
+                <li>✓ 21 Core Modules</li>
+                <li>✓ 17 Standard Modules</li>
+                <li class="disabled">✓ 10 Premium Modules</li>
+                <li class="disabled">✓ 12 Ultimate Modules</li>
+
+                <hr>
+
+                <li>✓ Unlimited Users</li>
+                <li>✓ Online Training</li>
+                <li>✓ Automatic Updates</li>
+                <li>✓ Email & Phone Support</li>
+                <li>✓ Student Information</li>
+                <li>✓ Teacher Login</li>
+                <li>✓ Library Management</li>
+                <li>✓ Transportation</li>
+            </ul>
+
+        </div>
+    </div>
+
+    <!-- PREMIUM -->
+    <div class="col-lg-4 col-md-6">
+        <div class="price-card premium">
+
+            <h1 class="plan-title premium-text">PREMIUM</h1>
+
+            <h2 class="price">₹75,000</h2>
+
+            <h5 class="gst-text">+ GST</h5>
+
+            <p class="billing">(billed yearly)</p>
+
+            <div class="d-grid gap-2 mt-4">
+                <a href=""><button class="plan-btn premium-btn">
+                    Get Premium
+                </button></a>
+
+                <button class="contact-btn premium-contact">
+                    Contact Us
+                </button>
+            </div>
+
+            <hr>
+
+            <ul class="plan-features">
+                <li>✓ 21 Core Modules</li>
+                <li>✓ 17 Standard Modules</li>
+                <li>✓ 10 Premium Modules</li>
+                <li class="disabled">✓ 12 Ultimate Modules</li>
+
+                <hr>
+
+                <li>✓ Unlimited Users</li>
+                <li>✓ Online Training</li>
+                <li>✓ Automatic Updates</li>
+                <li>✓ Email & Phone Support</li>
+                <li>✓ Student Information</li>
+                <li>✓ Teacher Login</li>
+                <li>✓ Library Management</li>
+                <li>✓ Transportation</li>
+            </ul>
+
+        </div>
+    </div>
+
+    <!-- ULTIMATE -->
+    <div class="col-lg-4 col-md-6">
+        <div class="price-card ultimate">
+
+            <h1 class="plan-title ultimate-text">ULTIMATE</h1>
+
+            <h2 class="price">₹1,00,000</h2>
+
+            <h5 class="gst-text">+ GST</h5>
+
+            <p class="billing">(billed yearly)</p>
+
+            <div class="d-grid gap-2 mt-4">
+                <a href=""><button class="plan-btn ultimate-btn">
+                    Get Ultimate
+                </button></a>
+
+                <button class="contact-btn ultimate-contact">
+                    Contact Us
+                </button>
+            </div>
+
+            <hr>
+
+            <ul class="plan-features">
+                <li>✓ 21 Core Modules</li>
+                <li>✓ 17 Standard Modules</li>
+                <li>✓ 10 Premium Modules</li>
+                <li>✓ 12 Ultimate Modules</li>
+
+                <hr>
+
+                <li>✓ Unlimited Users</li>
+                <li>✓ Online Training</li>
+                <li>✓ Automatic Updates</li>
+                <li>✓ Email & Phone Support</li>
+                <li>✓ Student Information</li>
+                <li>✓ Teacher Login</li>
+                <li>✓ Library Management</li>
+                <li>✓ Transportation</li>
+            </ul>
+
+        </div>
+    </div>
+
+</div>
+</div>
+</section>
+<!-- REVIEWS -->
+
+<section class="reviews">
+
+<div class="container">
+
+<h2 class="section-title">
+    What People Say About Us
+</h2>
+
+<div class="review-wrapper">
+
+<div class="review-track">
+
+<div class="review-card">
+<div class="stars">★★★★★</div>
+<p>
+Fee management became completely hassle-free.
+</p>
+<h5>Ravi Kumar</h5>
+<span>Accounts Manager</span>
+</div>
+
+<div class="review-card">
+<div class="stars">★★★★★</div>
+<p>
+Everything is now organized in one place.
+</p>
+<h5>Ananya Sharma</h5>
+<span>School Principal</span>
+</div>
+
+<div class="review-card">
+<div class="stars">★★★★☆</div>
+<p>
+Teacher portal improved productivity greatly.
+</p>
+<h5>Suresh Reddy</h5>
+<span>Senior Teacher</span>
+</div>
+
+<div class="review-card">
+<div class="stars">★★★★★</div>
+<p>
+Parent communication improved significantly.
+</p>
+<h5>Ravi Kumar</h5>
+<span>Administrator</span>
+</div>
+
+</div>
+
+</div>
+
+</div>
+
+</section>
+
+<!-- FOOTER -->
+
+<footer>
+
+<div class="container">
+
+<div class="row g-4">
+
+<div class="col-lg-4">
+
+<a class="navbar-brand mb-3 d-inline-block"
+   href="{% url 'accounts:index' %}">
+   Potla<span>SMS</span>
+</a>
+
+<p>
+Potla SMS simplifies school administration,
+student tracking, communication,
+analytics, and digital management.
+</p>
+
+</div>
+
+<div class="col-lg-4">
+
+<h5 class="footer-heading">
+Quick Links
+</h5>
+
+
+<ul class="footer-links">
+
+<li>
+<a href="{% url 'accounts:index' %}">
+Home
+</a>
+</li>
+
+<li>
+<a href="{% url 'accounts:smsabout' %}">
+About
+</a>
+</li>
+
+<li>
+<a href="{% url 'accounts:pricing' %}">
+Pricing
+</a>
+</li>
+
+<li>
+<a href="{% url 'accounts:login' %}">
+Login
+</a>
+</li>
+
+<li>
+<a href="{% url 'accounts:register' %}">
+Register
+</a>
+</li>
+
+</ul>
+
+</div>
+
+<div class="col-lg-4">
+
+<h5 class="footer-heading">
+Connect With Us
+</h5>
+
+<div class="social-icons mb-4">
+
+<a href="#" class="social-link">
+<i class="fab fa-facebook-f"></i>
+</a>
+
+<a href="#" class="social-link">
+<i class="fab fa-twitter"></i>
+</a>
+
+<a href="#" class="social-link">
+<i class="fab fa-linkedin-in"></i>
+</a>
+
+<a href="#" class="social-link">
+<i class="fab fa-instagram"></i>
+</a>
+
+</div>
+
+<p>
+<i class="fas fa-envelope me-2"></i>
+info@potlasms.com
+</p>
+
+<p>
+<i class="fas fa-phone me-2"></i>
++91 98765 43210
+</p>
+
+</div>
+
+</div>
+
+<div class="footer-bottom">
+© 2026 Potla Tech Solutions Pvt. Ltd. All Rights Reserved.
+</div>
+
+</div>
+
+</footer>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+
+</body>
+</html>

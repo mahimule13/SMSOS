@@ -1,0 +1,54 @@
+<!DOCTYPE html>
+<html>
+  {% load static %}
+<head>
+<title>EduManage Pro</title>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;800&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+<link rel="stylesheet" href="{% static 'css/smscss.css' %}">
+</head>
+<body>
+<div class="detail-page">
+  <div class="detail-container">
+    <a href="{% url 'accounts:index' %}" class="back-btn"><i class="fas fa-arrow-left"></i> Back to Home</a>
+    
+    <div class="detail-header">
+      <div class="feature-icon"><i class="fas fa-users"></i></div>
+      <h1>Student Management</h1>
+      <p style="color: #5a6e7c; font-size: 1.1rem;">Manage student records, enrollment, and academic progress</p>
+    </div>
+    
+    <div class="detail-content">
+      <h2>Overview</h2>
+      <p>The Student Management module centralizes student data, enrollment processes, and academic tracking. It simplifies administration by providing a unified system for managing profiles, documents, attendance, and performance.</p>
+      <h2>Key Features</h2>
+      <div class="detail-features">
+        <div class="detail-feature-item"><h4><i class="fas fa-check-circle" style="color:#06b6d4; margin-right:8px;"></i> Student Profiles</h4><p>Maintain detailed student information</p></div>
+        <div class="detail-feature-item"><h4><i class="fas fa-check-circle" style="color:#06b6d4; margin-right:8px;"></i> Enrollment System</h4><p>Manage admissions and onboarding</p></div>
+        <div class="detail-feature-item"><h4><i class="fas fa-check-circle" style="color:#06b6d4; margin-right:8px;"></i> Attendance Tracking</h4><p>Monitor daily attendance records</p></div>
+        <div class="detail-feature-item"><h4><i class="fas fa-check-circle" style="color:#06b6d4; margin-right:8px;"></i> Document Storage</h4><p>Secure student document management</p></div>
+        <div class="detail-feature-item"><h4><i class="fas fa-check-circle" style="color:#06b6d4; margin-right:8px;"></i> Academic Reports</h4><p>Generate performance reports</p></div>
+        <div class="detail-feature-item"><h4><i class="fas fa-check-circle" style="color:#06b6d4; margin-right:8px;"></i> Progress Monitoring</h4><p>Track academic growth</p></div>
+      </div>
+      
+      <h2>Benefits</h2>
+      <div class="detail-features">
+        <div class="detail-feature-item"><i class="fas fa-star"></i> Centralized student data</div>
+        <div class="detail-feature-item"><i class="fas fa-star"></i> Faster admissions</div>
+        <div class="detail-feature-item"><i class="fas fa-star"></i> Improved tracking</div>
+        <div class="detail-feature-item"><i class="fas fa-star"></i> Reduced paperwork</div>
+      </div>
+
+      <div style="background: linear-gradient(135deg, #1f7b8c10, #2c9c7c10); padding: 1.5rem; border-radius: 1rem; margin-top: 2rem; text-align: center;">
+        <h3 style="color: #06b6d4;">Simplify student management today</h3>
+        <button class="demo-btn">Request a Demo</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<footer>
+  <p>&copy; 2025 EduManage Pro — Student Management Module</p>
+</footer>
+</body>
+</html>

@@ -1,0 +1,333 @@
+{% extends "base/layout.html" %}
+
+{% block title %}Student Dashboard - SMS{% endblock %}
+{% block page_title %}Student Dashboard{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <div class="row mb-3">
+        <div class="col-md-12">
+            <div class="card">
+                <div class="card-header">
+                    <i class="fas fa-bullhorn"></i> Active Announcements
+                </div>
+                <div class="card-body">
+                    {% if notices %}
+                        <div class="list-group">
+                            {% for n in notices|slice:":5" %}
+                            <div class="list-group-item">
+                                <div class="d-flex justify-content-between align-items-center">
+                                    <strong>{{ n.title }}</strong>
+                                    <span class="badge bg-primary">{{ n.priority|upper }}</span>
+                                </div>
+                                <p class="mb-1">{{ n.content|truncatechars:120 }}</p>
+                                <small class="text-muted">{{ n.created_at }}</small>
+                            </div>
+                            {% endfor %}
+                        </div>
+                    {% else %}
+                        <p class="text-muted mb-0">No active announcements.</p>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+    <!-- Statistics Cards -->
+    <div class="row">
+
+        <div class="col-md-3">
+            <div class="stat-card" style="border-left-color: #1e3a8a;">
+                <h5><i class="fas fa-school"></i> Class</h5>
+                <div class="stat-value">{{ student.section.class_model.standard }}</div>
+                <div class="stat-change">Section {{ student.section.name }}</div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="stat-card" style="border-left-color: #0f766e;">
+                <h5><i class="fas fa-clipboard-check"></i> Attendance</h5>
+                <div class="stat-value">{{ attendance_percentage }}%</div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="stat-card" style="border-left-color: #059669;">
+                <h5><i class="fas fa-book"></i> Pending Homework</h5>
+                <div class="stat-value">{{ pending_homework }}</div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="stat-card" style="border-left-color: #d97706;">
+                <h5><i class="fas fa-money-bill"></i> Fee Status</h5>
+                <div class="stat-value">
+                    {% if fee_status.status == 'paid' %}
+                    <span class="badge bg-success">PAID</span>
+                    {% elif fee_status.status == 'partial' %}
+                    <span class="badge bg-warning">PARTIAL</span>
+                    {% else %}
+                    <span class="badge bg-danger">PENDING</span>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Student Profile and Fee Structure -->
+    <div class="row mt-4">
+        <div class="col-md-8">
+            <div class="card">
+                <div class="card-header">
+                    <i class="fas fa-user-graduate"></i> Student Profile
+                </div>
+                <div class="card-body">
+                    <div class="row mb-3">
+                        <div class="col-sm-6"><strong>Name:</strong> {{ student.user.get_full_name }}</div>
+                        <div class="col-sm-6"><strong>Student ID:</strong> {{ student.student_id }}</div>
+                    </div>
+                    <div class="row mb-3">
+                        <div class="col-sm-4"><strong>Admission No:</strong> {{ student.admission_number }}</div>
+                        <div class="col-sm-4"><strong>Roll No:</strong> {{ student.roll_number }}</div>
+                        <div class="col-sm-4"><strong>Age:</strong> {{ student_age }}</div>
+                    </div>
+                    <div class="row mb-3">
+                        <div class="col-sm-4"><strong>Class:</strong> {{ student.section.class_model.standard }}</div>
+                        <div class="col-sm-4"><strong>Section:</strong> {{ student.section.name }}</div>
+                        <div class="col-sm-4"><strong>Gender:</strong> {{ student.get_gender_display }}</div>
+                    </div>
+                    <div class="row mb-3">
+                        <div class="col-sm-4"><strong>Blood Group:</strong> {{ student.blood_group }}</div>
+                        <div class="col-sm-4"><strong>Date of Birth:</strong> {{ student.dob|date:'F j, Y' }}</div>
+                        <div class="col-sm-4"><strong>Date of Join:</strong> {{ student.admission_date|date:'F j, Y' }}</div>
+                    </div>
+                    <div class="row mb-3">
+                        <div class="col-sm-6"><strong>Phone:</strong> {{ student.phone }}</div>
+                        <div class="col-sm-6"><strong>Address:</strong> {{ student.address|truncatechars:80 }}</div>
+                    </div>
+                    <div class="row mb-3">
+                        <div class="col-sm-6"><strong>Father:</strong> {{ student.father_name }} ({{ student.father_phone }})</div>
+                        <div class="col-sm-6"><strong>Mother:</strong> {{ student.mother_name }} ({{ student.mother_phone }})</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-4">
+            <div class="card">
+                <div class="card-header">
+                    <i class="fas fa-wallet"></i> Fee Records
+                </div>
+                <div class="card-body">
+                    <p class="text-muted mb-2">View your fee history and pay securely.</p>
+                    <a href="{% url 'fees:student_pay' %}" class="btn btn-primary w-100 mt-2">
+                        <i class="fas fa-credit-card"></i> Pay Fee
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+
+
+    
+    <!-- Attendance Month-wise Calendar -->
+
+    {% if attendance_calendar %}
+    <div class="row mt-4">
+        <div class="col-md-12">
+            <div class="card">
+                <div class="card-header d-flex justify-content-between align-items-center">
+                    <div>
+                        <i class="fas fa-calendar-alt"></i> Attendance Calendar
+                        <small class="text-muted">({{ attendance_calendar.month_label }})</small>
+                    </div>
+
+                    <div class="d-flex align-items-center gap-2">
+                        <a class="btn btn-sm btn-outline-secondary" href="?month={{ attendance_calendar.prev_month }}" aria-label="Previous month">&laquo;</a>
+                        <form method="get" class="m-0 d-flex align-items-center gap-2">
+                            <input type="month" name="month" class="form-control form-control-sm" value="{{ attendance_calendar.year }}-{{ attendance_calendar.month|stringformat:'02d' }}" style="width: 140px;" onchange="this.form.submit()" />
+                            <noscript><button class="btn btn-sm btn-primary" type="submit">Go</button></noscript>
+                        </form>
+                        <a class="btn btn-sm btn-outline-secondary" href="?month={{ attendance_calendar.next_month }}" aria-label="Next month">&raquo;</a>
+                    </div>
+                </div>
+
+                <div class="card-body">
+                    <div class="d-flex gap-3 flex-wrap mb-3">
+                        <div class="d-flex align-items-center gap-2"><span class="badge" style="background:#16a34a;">&nbsp;</span> Present</div>
+                        <div class="d-flex align-items-center gap-2"><span class="badge" style="background:#dc2626;">&nbsp;</span> Absent</div>
+                        <div class="d-flex align-items-center gap-2"><span class="badge" style="background:#d97706;">&nbsp;</span> Half Day</div>
+                        <div class="d-flex align-items-center gap-2"><span class="badge bg-secondary">&nbsp;</span> Holiday</div>
+                    </div>
+
+                    <div class="table-responsive">
+                        <table class="table table-bordered text-center align-middle" style="background:white;">
+                            <thead>
+                                <tr style="background:#f9fafb; color:#1e3a8a;">
+                                    <th>Mon</th><th>Tue</th><th>Wed</th><th>Thu</th><th>Fri</th><th>Sat</th><th>Sun</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for week in attendance_calendar.weeks %}
+                                    <tr>
+                                        {% for cell in week %}
+                                            {% if cell.status == 'present' %}
+<td class="p-2" style="background:#dcfce7; color:#065f46; font-weight:600; opacity:{% if cell.in_month %}1{% else %}0.35{% endif %};">{{ cell.day }}</td>
+
+                                            {% elif cell.status == 'absent' %}
+<td class="p-2" style="background:#fee2e2; color:#991b1b; font-weight:600; opacity:{% if cell.in_month %}1{% else %}0.35{% endif %};">{{ cell.day }}</td>
+
+                                            {% elif cell.status == 'half' %}
+<td class="p-2" style="background:#fef3c7; color:#92400e; font-weight:600; opacity:{% if cell.in_month %}1{% else %}0.35{% endif %};">{{ cell.day }}</td>
+
+                                            {% elif cell.status == 'holiday' %}
+<td class="p-2" style="background:#e5e7eb; color:#374151; font-weight:600; opacity:{% if cell.in_month %}1{% else %}0.35{% endif %};">{{ cell.day }}</td>
+                                            {% else %}
+                                                <td class="p-2" style="opacity:{% if cell.in_month %}1{% else %}0.35{% endif %};">{{ cell.day }}</td>
+                                            {% endif %}
+                                        {% endfor %}
+                                    </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    {% endif %}
+
+    <!-- Recent Marks + Timetables -->
+
+    <div class="row mt-4">
+
+        <div class="col-md-6">
+            <div class="card">
+                <div class="card-header">
+                    <i class="fas fa-chart-line"></i> Recent Marks
+                </div>
+                <table class="table">
+                    <thead>
+                        <tr>
+                            <th>Exam</th>
+                            <th>Subject</th>
+                            <th>Marks</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for mark in recent_marks %}
+                        <tr>
+                            <td>{{ mark.exam.name }}</td>
+                            <td>{{ mark.subject.name }}</td>
+                            <td><strong>{{ mark.marks_obtained }}/{{ mark.exam.total_marks }}</strong></td>
+                        </tr>
+                        {% empty %}
+                        <tr>
+                            <td colspan="3" class="text-center text-muted">No marks available</td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        <div class="col-md-6">
+            <div class="card">
+                <div class="card-header">
+                    <i class="fas fa-calendar"></i> Class Timetable
+                </div>
+                <table class="table table-sm">
+                    <thead>
+                        <tr>
+                            <th>Day</th>
+                            <th>Subject</th>
+                            <th>Time</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for class in timetable %}
+                        <tr>
+                            <td>{{ class.get_day_display }}</td>
+                            <td>{{ class.subject.name }}</td>
+                            <td>{{ class.start_time|time:"H:i" }}</td>
+                        </tr>
+                        {% empty %}
+                        <tr>
+                            <td colspan="3" class="text-center text-muted">No classes scheduled</td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <!-- Exam Timetable (filtered by student's section) -->
+    <div class="row mt-4">
+        <div class="col-md-12">
+            <div class="card">
+                <div class="card-header">
+                    <i class="fas fa-calendar-check"></i> Exam Timetable
+                </div>
+                <div class="card-body p-0">
+                    <table class="table table-sm mb-0">
+                        <thead>
+                            <tr>
+                                <th>Exam</th>
+                                <th>Subject</th>
+                                <th>Date</th>
+                                <th>Time</th>
+                                <th>Room</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for sch in exam_timetable %}
+                            <tr>
+                                <td>{{ sch.exam.name }}</td>
+                                <td>{{ sch.subject.name }}</td>
+                                <td>{{ sch.exam_date|date:"F j, Y" }}</td>
+                                <td>{{ sch.start_time|time:"H:i" }} - {{ sch.end_time|time:"H:i" }}</td>
+                                <td>{{ sch.room|default:"N/A" }}</td>
+                            </tr>
+                            {% empty %}
+                            <tr>
+                                <td colspan="5" class="text-center text-muted">No exam schedule available for your section.</td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Additional Info -->
+
+    <div class="row mt-4">
+        {% if transport %}
+        <div class="col-md-4">
+            <div class="card">
+                <div class="card-header">
+                    <i class="fas fa-bus"></i> Transport
+                </div>
+                <div class="card-body">
+                    <p><strong>Bus:</strong> {{ transport.bus.number }}</p>
+                    <p><strong>Route:</strong> {{ transport.route.route_name }}</p>
+                    <p><strong>Fare:</strong> ₹{{ transport.route.fare }}</p>
+                </div>
+            </div>
+        </div>
+        {% endif %}
+        
+        {% if hostel %}
+        <div class="col-md-4">
+            <div class="card">
+                <div class="card-header">
+                    <i class="fas fa-door-open"></i> Hostel
+                </div>
+                <div class="card-body">
+                    <p><strong>Room:</strong> {{ hostel.room.room_number }}</p>
+                    <p><strong>Type:</strong> {{ hostel.room.get_room_type_display }}</p>
+                    <p><strong>Floor:</strong> {{ hostel.room.floor }}</p>
+                </div>
+            </div>
+        </div>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}

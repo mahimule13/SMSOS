@@ -1,0 +1,34 @@
+{% extends "base/layout.html" %}
+
+{% block title %}Submit Homework - SMS{% endblock %}
+{% block page_title %}Submit Homework{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <div class="card">
+        <div class="card-body">
+            <h5>{{ homework.title }}</h5>
+            <p><strong>Section:</strong> {{ homework.section }}</p>
+            <p><strong>Subject:</strong> {{ homework.subject.name }}</p>
+            <p><strong>Due Date:</strong> {{ homework.due_date }}</p>
+            <p>{{ homework.description }}</p>
+
+            {% if messages %}
+                {% for message in messages %}
+                <div class="alert alert-{{ message.tags }}">{{ message }}</div>
+                {% endfor %}
+            {% endif %}
+
+            <form method="post" enctype="multipart/form-data">
+                {% csrf_token %}
+                <div class="mb-3">
+                    <label class="form-label">Upload Submission</label>
+                    <input type="file" name="submission_file" class="form-control" required>
+                </div>
+                <button type="submit" class="btn btn-primary">Submit Homework</button>
+                <a href="{% url 'homework:list' %}" class="btn btn-secondary">Cancel</a>
+            </form>
+        </div>
+    </div>
+</div>
+{% endblock %}

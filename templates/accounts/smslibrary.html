@@ -1,0 +1,158 @@
+<!doctype html>
+<html lang="en">
+  {% load static %}
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>EduManage Pro</title>
+    <link
+      href="https://fonts.googleapis.com/css2?family=Inter:opsz,wght@14..32,300;400;500;600;700;800&display=swap"
+      rel="stylesheet"
+    />
+    <link
+      rel="stylesheet"
+      href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css"
+    />
+    <link rel="stylesheet" href="{% static 'css/smscss.css' %}">
+  </head>
+  <body>
+    <div class="detail-page">
+      <div class="detail-container">
+        <a href="{% url 'accounts:index' %}" class="back-btn"
+          ><i class="fas fa-arrow-left"></i> Back to Home</a
+        >
+
+        <div class="detail-header">
+          <div class="feature-icon">
+            <i class="fas fa-cloud-upload-alt"></i>
+          </div>
+          <h1>Cloud Library</h1>
+          <p style="color: #5a6e7c">Access digital resources anytime</p>
+        </div>
+
+        <div class="detail-content">
+          <h2>Overview</h2>
+          <p>
+            The Cloud Library module provides a secure and accessible platform
+            for storing and sharing digital learning resources. It enables
+            students and teachers to access e-books, assignments, and study
+            materials anytime, from anywhere. With organized storage and
+            reliable backup, it supports a paperless and efficient learning
+            environment.
+          </p>
+          <h2>Key Features</h2>
+          <div class="detail-features">
+            <div class="detail-feature-item">
+              <h4>
+                <i
+                  class="fas fa-check-circle"
+                  style="color: #06b6d4; margin-right: 8px"
+                ></i>
+                E-Books & Resources
+              </h4>
+              <p>Access digital learning materials</p>
+            </div>
+            <div class="detail-feature-item">
+              <h4>
+                <i
+                  class="fas fa-check-circle"
+                  style="color: #06b6d4; margin-right: 8px"
+                ></i>
+                Assignment Storage
+              </h4>
+              <p>Store and manage assignments</p>
+            </div>
+            <div class="detail-feature-item">
+              <h4>
+                <i
+                  class="fas fa-check-circle"
+                  style="color: #06b6d4; margin-right: 8px"
+                ></i>
+                Secure Backup
+              </h4>
+              <p>Keep data safe with cloud backup</p>
+            </div>
+            <div class="detail-feature-item">
+              <h4>
+                <i
+                  class="fas fa-check-circle"
+                  style="color: #06b6d4; margin-right: 8px"
+                ></i>
+                Anytime Access
+              </h4>
+              <p>Access resources from anywhere</p>
+            </div>
+            <div class="detail-feature-item">
+              <h4>
+                <i
+                  class="fas fa-check-circle"
+                  style="color: #06b6d4; margin-right: 8px"
+                ></i>
+                File Sharing
+              </h4>
+              <p>Share materials easily</p>
+            </div>
+            <div class="detail-feature-item">
+              <h4>
+                <i
+                  class="fas fa-check-circle"
+                  style="color: #06b6d4; margin-right: 8px"
+                ></i>
+                Organized Storage
+              </h4>
+              <p>Manage files efficiently</p>
+            </div>
+          </div>
+
+          <h2>Benefits</h2>
+          <div class="detail-features">
+            <div class="detail-feature-item">
+              <i
+                class="fas fa-star"
+                style="color: #06b6d4; margin-right: 8px"
+              ></i>
+              24/7 access to resources
+            </div>
+            <div class="detail-feature-item">
+              <i
+                class="fas fa-star"
+                style="color: #06b6d4; margin-right: 8px"
+              ></i>
+              Paperless environment
+            </div>
+            <div class="detail-feature-item">
+              <i
+                class="fas fa-star"
+                style="color: #06b6d4; margin-right: 8px"
+              ></i>
+              Secure data storage
+            </div>
+            <div class="detail-feature-item">
+              <i
+                class="fas fa-star"
+                style="color: #06b6d4; margin-right: 8px"
+              ></i>
+              Easy collaboration
+            </div>
+          </div>
+
+          <div
+            style="
+              background: linear-gradient(135deg, #1f7b8c10, #2c9c7c10);
+              padding: 1.5rem;
+              border-radius: 1rem;
+              text-align: center;
+            "
+          >
+            <h3 style="color: #06b6d4">Go digital with cloud</h3>
+            <button class="demo-btn">Request a Demo</button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <footer>
+      <p>&copy; 2025 EduManage Pro — Cloud Library Module</p>
+    </footer>
+  </body>
+</html>

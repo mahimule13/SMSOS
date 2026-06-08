@@ -1,0 +1,33 @@
+0.{% extends "base.html" %}
+
+{% block content %}
+<h2>Complete Student Profile</h2>
+
+{% if generated_credentials %}
+    <div class="alert alert-info">
+        <strong>Login created for this student.</strong>
+        After saving, student login will open automatically.
+    </div>
+{% endif %}
+{% if principal_name %}
+    <div class="text-muted mb-3">
+        Principal: <strong>{{ principal_name }}</strong>
+    </div>
+{% endif %}
+
+{% if generated_credentials %}
+
+    <div class="alert alert-success">
+        <h5 class="mb-2">Student Credentials (Save these)</h5>
+        <p><strong>Username:</strong> {{ generated_credentials.username }}</p>
+        <p><strong>Password:</strong> {{ generated_credentials.password }}</p>
+    </div>
+{% endif %}
+
+<form method="post">
+    {% csrf_token %}
+    {{ form.as_p }}
+    <button type="submit" class="btn btn-primary">Create Student Profile</button>
+</form>
+{% endblock %}
+

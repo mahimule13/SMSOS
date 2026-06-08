@@ -1,0 +1,228 @@
+{% extends "base/auth.html" %}
+
+{% block title %}Register - School Management System{% endblock %}
+
+{% block auth_content %}
+
+<div class="auth-header text-center mb-4">
+    <h1>
+        <i class="fas fa-user-plus text-primary"></i>
+    </h1>
+
+    <h2>Create School Account</h2>
+
+    <p class="text-muted">
+        Register into the School ERP System
+    </p>
+</div>
+
+<form method="post" enctype="multipart/form-data">
+
+    {% csrf_token %}
+
+    <div class="row">
+
+        <!-- FIRST NAME -->
+        <div class="col-md-6 mb-3">
+            <label class="form-label">
+                First Name
+            </label>
+
+            {{ form.first_name }}
+        </div>
+
+        <!-- LAST NAME -->
+        <div class="col-md-6 mb-3">
+            <label class="form-label">
+                Last Name
+            </label>
+
+            {{ form.last_name }}
+        </div>
+
+        <!-- USERNAME -->
+        <div class="col-md-6 mb-3">
+            <label class="form-label">
+                Username
+            </label>
+
+            {{ form.username }}
+        </div>
+
+        <!-- EMAIL -->
+        <div class="col-md-6 mb-3">
+            <label class="form-label">
+                Email Address
+            </label>
+
+            {{ form.email }}
+        </div>
+
+        <!-- ROLE -->
+        <div class="col-md-6 mb-3">
+            <label class="form-label">
+                Select Role
+            </label>
+
+            {{ form.role }}
+        </div>
+
+        <!-- SCHOOL ID -->
+        <div class="col-md-6 mb-3">
+            <label class="form-label">
+                School ID
+            </label>
+
+            {{ form.school_id }}
+        </div>
+            <!-- SCHOOL NAME -->
+        <div class="col-md-6 mb-3">
+            <label class="form-label">
+                School Name
+            </label>
+            {{ form.school_name }}
+        </div>
+        <!-- PHONE -->
+        <div class="col-md-6 mb-3">
+            <label class="form-label">
+                Phone Number
+            </label>
+
+            {{ form.phone }}
+        </div>
+
+        <!-- GENDER -->
+        <div class="col-md-6 mb-3">
+            <label class="form-label">
+                Gender
+            </label>
+
+            {{ form.gender }}
+        </div>
+
+        <!-- DOB -->
+        <div class="col-md-6 mb-3">
+            <label class="form-label">
+                Date of Birth
+            </label>
+
+            {{ form.dob }}
+        </div>
+
+        <!-- PHOTO -->
+        <div class="col-md-6 mb-3">
+            <label class="form-label">
+                Profile Photo
+            </label>
+
+            {{ form.photo }}
+        </div>
+
+        <!-- ADDRESS -->
+        <div class="col-12 mb-3">
+            <label class="form-label">
+                Address
+            </label>
+
+            {{ form.address }}
+        </div>
+
+        <!-- CITY -->
+        <div class="col-md-4 mb-3">
+            <label class="form-label">
+                City
+            </label>
+
+            {{ form.city }}
+        </div>
+
+        <!-- STATE -->
+        <div class="col-md-4 mb-3">
+            <label class="form-label">
+                State
+            </label>
+
+            {{ form.state }}
+        </div>
+
+        <!-- COUNTRY -->
+        <div class="col-md-4 mb-3">
+            <label class="form-label">
+                Country
+            </label>
+
+            {{ form.country }}
+        </div>
+
+        <!-- ZIP CODE -->
+        <div class="col-md-6 mb-3">
+            <label class="form-label">
+                ZIP Code
+            </label>
+
+            {{ form.zip_code }}
+        </div>
+
+        <!-- PASSWORD -->
+        <div class="col-md-6 mb-3">
+            <label class="form-label">
+                Password
+            </label>
+
+            {{ form.password1 }}
+        </div>
+
+        <!-- CONFIRM PASSWORD -->
+        <div class="col-md-6 mb-4">
+            <label class="form-label">
+                Confirm Password
+            </label>
+
+            {{ form.password2 }}
+        </div>
+
+    </div>
+
+    <!-- ERRORS -->
+    {% if form.errors %}
+    <div class="alert alert-danger">
+
+        {% for field in form %}
+            {% for error in field.errors %}
+                <div>{{ error }}</div>
+            {% endfor %}
+        {% endfor %}
+
+        {% for error in form.non_field_errors %}
+            <div>{{ error }}</div>
+        {% endfor %}
+
+    </div>
+    {% endif %}
+
+    <!-- BUTTON -->
+    <button type="submit" class="btn btn-primary btn-auth w-100">
+
+        <i class="fas fa-user-check"></i>
+
+        Create Account
+
+    </button>
+
+</form>
+
+<div class="auth-footer text-center mt-4">
+
+    <p>
+
+        Already have an account?
+
+        <a href="{% url 'accounts:login' %}">
+            Login here
+        </a>
+
+    </p>
+
+</div>
+
+{% endblock %}

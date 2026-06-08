@@ -1,0 +1,48 @@
+{% extends "base/layout.html" %}
+
+{% block title %}Timetable List - SMS{% endblock %}
+{% block page_title %}Timetable List{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <div class="card">
+        <div class="card-header">
+            <i class="fas fa-list"></i> All Timetable Entries
+        </div>
+        <div class="card-body">
+            <table class="table table-sm">
+                <thead>
+                    <tr>
+                        <th>Section</th>
+                        <th>Week Start</th>
+                        <th>Day</th>
+                        <th>Start</th>
+                        <th>End</th>
+                        <th>Subject</th>
+                        <th>Teacher</th>
+                        <th>Room</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for item in timetables %}
+                    <tr>
+                        <td>{{ item.section.class_model }} - {{ item.section.name }}</td>
+                        <td>{{ item.week_start_date }}</td>
+                        <td>{{ item.get_day_display }}</td>
+                        <td>{{ item.start_time|time:"H:i" }}</td>
+                        <td>{{ item.end_time|time:"H:i" }}</td>
+                        <td>{{ item.subject.name }}</td>
+                        <td>{{ item.teacher.user.get_full_name if item.teacher else "-" }}</td>
+                        <td>{{ item.room|default:"N/A" }}</td>
+                    </tr>
+                    {% empty %}
+                    <tr>
+                        <td colspan="8" class="text-center text-muted">No timetable entries found.</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+{% endblock %}

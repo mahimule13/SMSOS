@@ -1,0 +1,204 @@
+{% extends "base/layout.html" %}
+
+{% block title %}Create Student - SMS{% endblock %}
+{% block page_title %}Create Student{% endblock %}
+
+{% block content %}
+<div class="container">
+    <h3>Create Student</h3>
+
+    {% if messages %}
+        {% for message in messages %}
+            <div class="alert alert-{{ message.tags }}">{{ message }}</div>
+        {% endfor %}
+    {% endif %}
+
+    <form method="post" enctype="multipart/form-data">
+        {% csrf_token %}
+
+        <div class="row">
+            <div class="col-md-4 mb-3">
+                <label class="form-label">First name</label>
+                <input type="text" name="first_name" class="form-control" required>
+            </div>
+            <div class="col-md-4 mb-3">
+                <label class="form-label">Last name</label>
+                <input type="text" name="last_name" class="form-control" required>
+            </div>
+            <div class="col-md-4 mb-3">
+                <label class="form-label">Phone</label>
+                <input type="text" name="phone" class="form-control" required>
+            </div>
+        </div>
+
+        <!-- Username / Password for student login -->
+        <div class="row">
+            <div class="col-md-4 mb-3">
+                <label class="form-label">Username</label>
+                <input type="text" name="username" class="form-control" placeholder="(optional)" >
+            </div>
+            <div class="col-md-4 mb-3">
+                <label class="form-label">Password</label>
+                <input type="password" name="password" class="form-control" required>
+            </div>
+            <div class="col-md-4 mb-3">
+                <label class="form-label">Confirm Password</label>
+                <input type="password" name="password2" class="form-control" required>
+            </div>
+        </div>
+
+        <div class="row">
+            <div class="col-md-4 mb-3">
+                <label class="form-label">Class</label>
+                <select id="class-select" name="class" class="form-control">
+                    <option value="">-- Select Class --</option>
+                    {% for cls in classes %}
+                    <option value="{{ cls.id }}">Class {{ cls.standard }} - {{ cls.name }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+            <div class="col-md-4 mb-3">
+                <label class="form-label">Section</label>
+                <select id="section-select" name="section" class="form-control" required>
+                    <option value="">-- Select Section --</option>
+                    {% for section in sections %}
+                    <option value="{{ section.id }}" data-class="{{ section.class_model.id }}">{{ section.class_model.standard }} - {{ section.name }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+            <div class="col-md-4 mb-3">
+                <label class="form-label">Admission Number</label>
+                <input type="text" name="admission_number" class="form-control" required>
+            </div>
+            <div class="col-md-4 mb-3">
+                <label class="form-label">Roll Number</label>
+                <input type="text" name="roll_number" class="form-control" required>
+            </div>
+        </div>
+
+        <div class="row">
+            <div class="col-md-4 mb-3">
+                <label class="form-label">Date of Birth</label>
+                <input type="date" name="dob" class="form-control" required>
+            </div>
+            <div class="col-md-4 mb-3">
+                <label class="form-label">Date of Join</label>
+                <input type="date" name="admission_date" class="form-control" required>
+            </div>
+            <div class="col-md-4 mb-3">
+                <label class="form-label">Gender</label>
+                <select name="gender" class="form-control" required>
+                    <option value="M">Male</option>
+                    <option value="F">Female</option>
+                    <option value="O">Other</option>
+                </select>
+            </div>
+        </div>
+
+        <div class="row">
+            <div class="col-md-4 mb-3">
+                <label class="form-label">Blood Group</label>
+                <select name="blood_group" class="form-control">
+                    <option value="">-- Select --</option>
+                    <option value="O+">O+</option>
+                    <option value="O-">O-</option>
+                    <option value="A+">A+</option>
+                    <option value="A-">A-</option>
+                    <option value="B+">B+</option>
+                    <option value="B-">B-</option>
+                    <option value="AB+">AB+</option>
+                    <option value="AB-">AB-</option>
+                </select>
+            </div>
+            <div class="col-md-8 mb-3">
+                <label class="form-label">Address</label>
+                <textarea name="address" class="form-control" rows="2"></textarea>
+            </div>
+        </div>
+
+        <div class="row">
+            <div class="col-md-6 mb-3">
+                <label class="form-label">Father Name</label>
+                <input type="text" name="father_name" class="form-control" required>
+            </div>
+            <div class="col-md-6 mb-3">
+                <label class="form-label">Father Phone</label>
+                <input type="text" name="father_phone" class="form-control" required>
+            </div>
+        </div>
+
+        <div class="row">
+            <div class="col-md-6 mb-3">
+                <label class="form-label">Mother Name</label>
+                <input type="text" name="mother_name" class="form-control" required>
+            </div>
+            <div class="col-md-6 mb-3">
+                <label class="form-label">Mother Phone</label>
+                <input type="text" name="mother_phone" class="form-control" required>
+            </div>
+        </div>
+
+        <div class="row">
+            <div class="col-md-6 mb-3">
+                <label class="form-label">Guardian Name</label>
+                <input type="text" name="guardian_name" class="form-control">
+            </div>
+            <div class="col-md-6 mb-3">
+                <label class="form-label">Guardian Phone</label>
+                <input type="text" name="guardian_phone" class="form-control">
+            </div>
+        </div>
+
+        <div class="row">
+            <div class="col-md-6 mb-3">
+                <label class="form-label">Photo</label>
+                <input type="file" name="photo" class="form-control" accept="image/*" required>
+            </div>
+            <div class="col-md-6 mb-3">
+                <label class="form-label">Fee Structure</label>
+                <select name="fee_structure" class="form-control">
+                    <option value="">-- Select Fee Structure --</option>
+                    {% for fee in fee_structures %}
+                    <option value="{{ fee.id }}">{{ fee.name }} - ₹{{ fee.amount }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+        </div>
+
+        <button type="submit" class="btn btn-primary">Create</button>
+        <a href="{% url 'students:list' %}" class="btn btn-secondary">Cancel</a>
+    </form>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    (function(){
+        const classSelect = document.getElementById('class-select');
+        const sectionSelect = document.getElementById('section-select');
+
+        function filterSections(){
+            const clsId = classSelect.value;
+            for (const opt of sectionSelect.options){
+                const optClass = opt.getAttribute('data-class');
+                if (!opt.value) { opt.hidden = false; opt.disabled = false; continue; }
+                if (!clsId){
+                    opt.hidden = false; opt.disabled = false;
+                } else {
+                    if (optClass === clsId) { opt.hidden = false; opt.disabled = false; }
+                    else { opt.hidden = true; opt.disabled = true; }
+                }
+            }
+            // reset selection if current selection is hidden
+            if (sectionSelect.selectedOptions.length && sectionSelect.selectedOptions[0].hidden){
+                sectionSelect.value = '';
+            }
+        }
+
+        if (classSelect){
+            classSelect.addEventListener('change', filterSections);
+            document.addEventListener('DOMContentLoaded', filterSections);
+        }
+    })();
+</script>
+{% endblock %}

@@ -1,0 +1,404 @@
+{% extends "base/layout.html" %}
+
+{% block title %}Admin Dashboard - SMS{% endblock %}
+{% block page_title %}Admin Dashboard{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <!-- Statistics Cards -->
+    <div class="row">
+        <div class="col-md-3">
+            <div class="stat-card" style="border-left-color: #1e3a8a;">
+                <h5><i class="fas fa-user-graduate"></i> Total Students</h5>
+                <div class="stat-value">{{ total_students }}</div>
+                <div class="stat-change">Active student records</div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="stat-card" style="border-left-color: #0f766e;">
+                <h5><i class="fas fa-chalkboard-user"></i> Total Teachers</h5>
+                <div class="stat-value">{{ total_teachers }}</div>
+                <div class="stat-change">Active teaching staff</div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="stat-card" style="border-left-color: #4338ca;">
+                <h5><i class="fas fa-school"></i> Active Classes</h5>
+                <div class="stat-value">{{ total_classes }}</div>
+                <div class="stat-change">Class groups available</div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="stat-card" style="border-left-color: #d946ef;">
+                <h5><i class="fas fa-book-reader"></i> Subjects</h5>
+                <div class="stat-value">{{ total_subjects }}</div>
+                <div class="stat-change">Active subjects assigned</div>
+            </div>
+        </div>
+    </div>
+    <div class="row mt-3">
+        <div class="col-md-3">
+            <div class="stat-card" style="border-left-color: #0ea5e9;">
+                <h5><i class="fas fa-layer-group"></i> Sections</h5>
+                <div class="stat-value">{{ total_sections }}</div>
+                <div class="stat-change">Active sections available</div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="stat-card" style="border-left-color: #16a34a;">
+                <h5><i class="fas fa-user-check"></i> Present Today</h5>
+                <div class="stat-value">{{ attendance_percentage }}%</div>
+                <div class="stat-change">{{ students_present }} students present</div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="stat-card" style="border-left-color: #f97316;">
+                <h5><i class="fas fa-hand-holding-usd"></i> Fee Collected</h5>
+                <div class="stat-value">₹{{ total_fee_collected|floatformat:0 }}</div>
+                <div class="stat-change">All-time paid collection</div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="stat-card" style="border-left-color: #ef4444;">
+                <h5><i class="fas fa-exclamation-triangle"></i> Pending Fees</h5>
+                <div class="stat-value">₹{{ total_fee_due|floatformat:0 }}</div>
+                <div class="stat-change">{{ pending_fee_students }} students pending</div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Charts -->
+    <div class="row">
+        <div class="col-md-4">
+            <div class="card">
+                <div class="card-header">
+                    <i class="fas fa-chart-line"></i> Attendance Trend (Last 7 Days)
+                </div>
+                <div class="card-body">
+                    <canvas id="attendanceChart"></canvas>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-4">
+            <div class="card">
+                <div class="card-header">
+                    <i class="fas fa-chart-bar"></i> Fee Collection (Last 6 Months)
+                </div>
+                <div class="card-body">
+                    <canvas id="feeChart"></canvas>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-4">
+            <div class="card">
+                <div class="card-header">
+                    <i class="fas fa-chart-pie"></i> Class Distribution
+                </div>
+                <div class="card-body">
+                    <canvas id="classDistributionChart"></canvas>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <div class="row mt-3">
+        <div class="col-md-6">
+            <div class="card">
+                <div class="card-header">
+                    <i class="fas fa-chalkboard-teacher"></i> Teacher Attendance (Last 7 Days)
+                </div>
+                <div class="card-body">
+                    <canvas id="teacherAttendanceChart"></canvas>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-6">
+            <div class="card">
+                <div class="card-header">
+                    <i class="fas fa-venus-mars"></i> Teacher Gender Distribution
+                </div>
+                <div class="card-body">
+                    <canvas id="teacherGenderChart"></canvas>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Section Filter and Students -->
+    <div class="row">
+        <div class="col-md-12">
+            <div class="card">
+                <div class="card-header">
+                    <i class="fas fa-filter"></i> Section-wise Statistics
+                </div>
+                <div class="card-body">
+                    <form method="get" class="row g-3">
+                        <div class="col-md-6">
+                            <select name="section" class="form-control" onchange="this.form.submit()">
+                                <option value="">-- Select Section --</option>
+                                {% for section in sections %}
+                                <option value="{{ section.id }}" {% if selected_section|stringformat:"i" == section.id|stringformat:"i" %}selected{% endif %}>
+                                    {{ section }}
+                                </option>
+                                {% endfor %}
+                            </select>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Quick Links -->
+    <div class="row mt-4">
+        <div class="col-md-6">
+            <div class="card">
+                <div class="card-header">
+                    <i class="fas fa-bullhorn"></i> Active Announcements
+                </div>
+                <div class="card-body">
+                    {% if notices %}
+                        <div class="list-group">
+                            {% for n in notices|slice:":5" %}
+                            <div class="list-group-item">
+                                <div class="d-flex justify-content-between align-items-center">
+                                    <strong>{{ n.title }}</strong>
+                                    <span class="badge bg-primary">{{ n.priority|upper }}</span>
+                                </div>
+                                <p class="mb-1">{{ n.content|truncatechars:120 }}</p>
+                                <small class="text-muted">{{ n.created_at }}</small>
+                            </div>
+                            {% endfor %}
+                        </div>
+                    {% else %}
+                        <p class="text-muted mb-0">No active announcements.</p>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+        <div class="col-md-6">
+            <div class="card">
+                <div class="card-header">
+                    <i class="fas fa-birthday-cake"></i> Upcoming Birthdays
+                </div>
+
+                <div class="card-body">
+                    {% if upcoming_birthdays %}
+                    <ul class="list-group list-group-flush">
+                        {% for birthday in upcoming_birthdays %}
+                        <li class="list-group-item d-flex justify-content-between align-items-center">
+                            <div>
+                                <strong>{{ birthday.name }}</strong><br>
+                                <small>{{ birthday.section }}</small>
+                            </div>
+                            <span class="badge bg-primary rounded-pill">{{ birthday.date }}</span>
+                        </li>
+                        {% endfor %}
+                    </ul>
+                    {% else %}
+                    <p class="text-muted mb-0">No birthdays in the next 30 days.</p>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+        <div class="col-md-6">
+            <div class="card">
+                <div class="card-header">
+                    <i class="fas fa-file-invoice-dollar"></i> Top Pending Fees
+                </div>
+                <div class="card-body">
+                    {% if top_pending_fees %}
+                    <div class="table-responsive">
+                        <table class="table table-sm mb-0">
+                            <thead>
+                                <tr>
+                                    <th>Student</th>
+                                    <th>Balance</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for fee in top_pending_fees %}
+                                <tr>
+                                    <td>{{ fee.student.user.get_full_name }}</td>
+                                    <td>₹{{ fee.balance|floatformat:0 }}</td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                    {% else %}
+                    <p class="text-muted mb-0">No pending fee records.</p>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Section Filter and Students -->
+    <div class="row">
+        <div class="col-md-12">
+            <div class="card">
+                <div class="card-header">
+                    <i class="fas fa-filter"></i> Section-wise Statistics
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-md-3 mb-3">
+                            <a href="{% url 'students:create' %}" class="btn btn-outline-primary w-100">
+                                <i class="fas fa-plus"></i> Add Student
+                            </a>
+                        </div>
+                        <div class="col-md-3 mb-3">
+                            <a href="{% url 'teachers:create' %}" class="btn btn-outline-primary w-100">
+                                <i class="fas fa-plus"></i> Add Teacher
+                            </a>
+                        </div>
+                        <div class="col-md-3 mb-3">
+                            <a href="{% url 'accounts:add_principal' %}" class="btn btn-outline-primary w-100">
+                                <i class="fas fa-user-tie"></i> Add Principal
+                            </a>
+                        </div>
+                        <div class="col-md-3 mb-3">
+                            <a href="{% url 'fees:collection' %}" class="btn btn-outline-primary w-100">
+                                <i class="fas fa-money-bill-wave"></i> Collect Fees
+                            </a>
+                        </div>
+                        <div class="col-md-3 mb-3">
+                            <a href="{% url 'attendance:teacher_attendance' %}" class="btn btn-outline-primary w-100">
+                                <i class="fas fa-clipboard-list"></i> Mark Teacher Attendance
+                            </a>
+                        </div>
+                        <div class="col-md-3 mb-3">
+                            <a href="{% url 'attendance:student_attendance' %}" class="btn btn-outline-primary w-100">
+                                <i class="fas fa-clipboard-check"></i> Mark Student Attendance
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    // Attendance Chart
+    const attendanceData = {{ attendance_data|safe }};
+    const attendanceCtx = document.getElementById('attendanceChart').getContext('2d');
+    new Chart(attendanceCtx, {
+        type: 'line',
+        data: {
+            labels: attendanceData.map(d => d.date),
+            datasets: [{
+                label: 'Students Present',
+                data: attendanceData.map(d => d.present),
+                borderColor: '#1e3a8a',
+                backgroundColor: 'rgba(30, 58, 138, 0.1)',
+                borderWidth: 2,
+                tension: 0.4,
+                fill: true
+            }]
+        },
+        options: {
+            responsive: true,
+            plugins: {
+                legend: { display: true }
+            },
+            scales: {
+                y: { beginAtZero: true }
+            }
+        }
+    });
+    
+    // Fee Collection Chart
+    const feeData = {{ fee_data|safe }};
+    const feeCtx = document.getElementById('feeChart').getContext('2d');
+    new Chart(feeCtx, {
+        type: 'bar',
+        data: {
+            labels: feeData.map(d => d.month),
+            datasets: [{
+                label: 'Amount Collected (₹)',
+                data: feeData.map(d => d.collected),
+                backgroundColor: '#0f766e',
+                borderRadius: 8
+            }]
+        },
+        options: {
+            responsive: true,
+            plugins: {
+                legend: { display: true }
+            },
+            scales: {
+                y: { beginAtZero: true }
+            }
+        }
+    });
+
+    // Class Distribution Chart
+    const classDistributionData = {{ class_distribution_data|safe }};
+    const classLabels = classDistributionData.map(d => d.class);
+    const classCounts = classDistributionData.map(d => d.count);
+    const classCtx = document.getElementById('classDistributionChart').getContext('2d');
+    new Chart(classCtx, {
+        type: 'doughnut',
+        data: {
+            labels: classLabels,
+            datasets: [{
+                data: classCounts,
+                backgroundColor: ['#3b82f6', '#10b981', '#f59e0b', '#ef4444', '#8b5cf6', '#14b8a6']
+            }]
+        },
+        options: {
+            responsive: true,
+            plugins: {
+                legend: { position: 'bottom' }
+            }
+        }
+    });
+
+    // Teacher Attendance Chart
+    const teacherAttendanceData = {{ teacher_attendance_data|safe }};
+    const teacherCtx = document.getElementById('teacherAttendanceChart').getContext('2d');
+    new Chart(teacherCtx, {
+        type: 'line',
+        data: {
+            labels: teacherAttendanceData.map(d => d.date),
+            datasets: [{
+                label: 'Teachers Present',
+                data: teacherAttendanceData.map(d => d.present),
+                borderColor: '#7c2d12',
+                backgroundColor: 'rgba(124,45,18,0.08)',
+                borderWidth: 2,
+                tension: 0.4,
+                fill: true
+            }]
+        },
+        options: {
+            responsive: true,
+            plugins: { legend: { display: true } },
+            scales: { y: { beginAtZero: true } }
+        }
+    });
+
+    // Teacher Gender Distribution Chart
+    const teacherGenderData = {{ teacher_gender_data|safe }};
+    const genderLabels = teacherGenderData.map(d => d.label);
+    const genderCounts = teacherGenderData.map(d => d.count);
+    const genderColors = ['#4f46e5', '#ec4899', '#f59e0b'];
+    const genderCtx = document.getElementById('teacherGenderChart').getContext('2d');
+    new Chart(genderCtx, {
+        type: 'doughnut',
+        data: {
+            labels: genderLabels,
+            datasets: [{
+                data: genderCounts,
+                backgroundColor: genderColors
+            }]
+        },
+        options: {
+            responsive: true,
+            plugins: { legend: { position: 'bottom' } }
+        }
+    });
+</script>
+{% endblock %}

@@ -1,0 +1,80 @@
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body {
+      font-family: 'Inter', sans-serif;
+      background: #f4f9fe;
+      color: #06b6d4;
+      line-height: 1.5;
+    }
+    .btn-demo {
+      background: #4f46e5;
+      color: white;
+      padding: 0.5rem 1.5rem;
+      border-radius: 30px;
+      text-decoration: none;
+      font-weight: 600;
+      transition: 0.2s;
+    }
+    .btn-demo:hover { background: #1a5a74; }
+    .detail-page { min-height: calc(100vh - 200px); padding: 3rem 2rem; }
+    .detail-container {
+      max-width: 1000px;
+      margin: 0 auto;
+      background: white;
+      border-radius: 2rem;
+      padding: 3rem;
+      box-shadow: 0 10px 30px rgba(0,0,0,0.05);
+    }
+    .back-btn {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.5rem;
+      background: #4f46e5;
+      color: white;
+      border: none;
+      padding: 0.7rem 1.5rem;
+      border-radius: 40px;
+      font-weight: 600;
+      cursor: pointer;
+      margin-bottom: 2rem;
+      transition: 0.2s;
+      text-decoration: none;
+    }
+    .back-btn:hover { background: #06b6b4; transform: translateX(-3px); }
+    .detail-header { text-align: center; margin-bottom: 2rem; }
+    .detail-header .feature-icon { font-size: 4rem; margin-bottom: 1rem; color: #4f46e5; }
+    .detail-header h1 { font-size: 2.5rem; color: #4f46e5; }
+    .detail-content h2 { color: #4f46e5; margin: 1.5rem 0 1rem; }
+    .detail-content p { color: #64748b; line-height: 1.7; margin-bottom: 1rem; }
+    .detail-features {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+      gap: 1.5rem;
+      margin: 2rem 0;
+    }
+    .detail-feature-item {
+      background: #f8fafc;
+      padding: 1rem;
+      border-radius: 1rem;
+      border-left: 4px solid #06b6d4;
+    }
+    .detail-feature-item h4 { color: #06b6d4; margin-bottom: 0.5rem; }
+    .demo-btn {
+      background: #4f46e5;
+      color: white;
+      border: none;
+      padding: 0.75rem 2rem;
+      border-radius: 40px;
+      font-weight: 600;
+      cursor: pointer;
+      margin-top: 1rem;
+      transition: 0.2s;
+    }
+    .demo-btn:hover { background: #4f46e5; transform: translateY(-2px); }
+    footer {
+      background: #4f46e5;
+      color: #a0c4d4;
+      text-align: center;
+      padding: 2rem;
+      margin-top: 3rem;
+    }
+    @media (max-width: 768px) { .detail-container { padding: 1.5rem; } }

@@ -1,0 +1,69 @@
+{% extends "base/layout.html" %}
+
+{% block title %}Teacher Leave Requests - SMS{% endblock %}
+{% block page_title %}Teacher Leave Requests{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <div class="card">
+        <div class="card-header">
+            <i class="fas fa-file-signature"></i> Teacher Leave Requests
+        </div>
+        <div class="card-body">
+            {% if leaves %}
+            <div class="table-responsive">
+                <table class="table table-hover">
+                    <thead>
+                        <tr>
+                            <th>Teacher</th>
+                            <th>Leave Type</th>
+                            <th>Dates</th>
+                            <th>Reason</th>
+                            <th>Status</th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for leave in leaves %}
+                        <tr>
+                            <td>{{ leave.teacher.user.get_full_name }}</td>
+                            <td>{{ leave.get_leave_type_display }}</td>
+                            <td>{{ leave.start_date }} - {{ leave.end_date }}</td>
+                            <td>{{ leave.reason|truncatechars:60 }}</td>
+                            <td>
+                                {% if leave.status == 'pending' %}
+                                <span class="badge bg-warning text-dark">Pending</span>
+                                {% elif leave.status == 'approved' %}
+                                <span class="badge bg-success">Approved</span>
+                                {% else %}
+                                <span class="badge bg-danger">Rejected</span>
+                                {% endif %}
+                            </td>
+                            <td>
+                                {% if leave.status == 'pending' %}
+                                <form method="post" class="d-inline-block">
+                                    {% csrf_token %}
+                                    <input type="hidden" name="leave_id" value="{{ leave.id }}">
+                                    <button name="action" value="approve" class="btn btn-sm btn-success">Approve</button>
+                                </form>
+                                <form method="post" class="d-inline-block">
+                                    {% csrf_token %}
+                                    <input type="hidden" name="leave_id" value="{{ leave.id }}">
+                                    <button name="action" value="reject" class="btn btn-sm btn-danger">Reject</button>
+                                </form>
+                                {% else %}
+                                <span class="text-muted">No action</span>
+                                {% endif %}
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+            {% else %}
+            <p class="text-muted">No teacher leave requests found.</p>
+            {% endif %}
+        </div>
+    </div>
+</div>
+{% endblock %}

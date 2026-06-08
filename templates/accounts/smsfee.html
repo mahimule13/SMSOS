@@ -1,0 +1,154 @@
+<!doctype html>
+<html>
+  {% load static %}
+  <head>
+    <title>EduManage Pro</title>
+    <link
+      href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;800&display=swap"
+      rel="stylesheet"
+    />
+    <link
+      rel="stylesheet"
+      href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css"
+    />
+    <link rel="stylesheet" href="{% static 'css/smscss.css' %}">
+  </head>
+  <body>
+    <div class="detail-page">
+      <div class="detail-container">
+        <a href="{% url 'accounts:index' %}" class="back-btn"
+          ><i class="fas fa-arrow-left"></i> Back to Home</a
+        >
+
+        <div class="detail-header">
+          <div class="feature-icon"><i class="fas fa-credit-card"></i></div>
+          <h1>Fee Management</h1>
+          <p style="color: #5a6e7c; font-size: 1.1rem">
+            Manage payments, invoices, and financial reports
+          </p>
+        </div>
+
+        <div class="detail-content">
+          <h2>Overview</h2>
+          <p>
+            The Fee Management module simplifies financial operations by
+            automating fee collection, invoice generation, and payment tracking.
+            It supports secure online payments, sends timely reminders, and
+            provides detailed financial reports. This system minimizes errors,
+            ensures transparency, and enhances the overall efficiency of
+            managing school finances.
+          </p>
+          <h2>Key Features</h2>
+          <div class="detail-features">
+            <div class="detail-feature-item">
+              <h4>
+                <i
+                  class="fas fa-check-circle"
+                  style="color: #06b6d4; margin-right: 8px"
+                ></i>
+                Online Payments
+              </h4>
+              <p>Secure and fast digital transactions</p>
+            </div>
+            <div class="detail-feature-item">
+              <h4>
+                <i
+                  class="fas fa-check-circle"
+                  style="color: #06b6d4; margin-right: 8px"
+                ></i>
+                Invoice Generation
+              </h4>
+              <p>Auto-generate fee invoices</p>
+            </div>
+            <div class="detail-feature-item">
+              <h4>
+                <i
+                  class="fas fa-check-circle"
+                  style="color: #06b6d4; margin-right: 8px"
+                ></i>
+                Payment Reminders
+              </h4>
+              <p>Send automated due alerts</p>
+            </div>
+            <div class="detail-feature-item">
+              <h4>
+                <i
+                  class="fas fa-check-circle"
+                  style="color: #06b6d4; margin-right: 8px"
+                ></i>
+                Financial Reports
+              </h4>
+              <p>Track income and transactions</p>
+            </div>
+            <div class="detail-feature-item">
+              <h4>
+                <i
+                  class="fas fa-check-circle"
+                  style="color: #06b6d4; margin-right: 8px"
+                ></i>
+                Auto Reconciliation
+              </h4>
+              <p>Match payments automatically</p>
+            </div>
+            <div class="detail-feature-item">
+              <h4>
+                <i
+                  class="fas fa-check-circle"
+                  style="color: #06b6d4; margin-right: 8px"
+                ></i>
+                Multi-Payment Options
+              </h4>
+              <p>Support multiple payment methods</p>
+            </div>
+          </div>
+
+          <h2>Benefits</h2>
+          <div class="detail-features">
+            <div class="detail-feature-item">
+              <i
+                class="fas fa-star"
+                style="color: #06b6d4; margin-right: 8px"
+              ></i>
+              Faster fee collection
+            </div>
+            <div class="detail-feature-item">
+              <i
+                class="fas fa-star"
+                style="color:#06b6d4; margin-right: 8px"
+              ></i>
+              Reduced financial errors
+            </div>
+            <div class="detail-feature-item">
+              <i
+                class="fas fa-star"
+                style="color: #06b6d4; margin-right: 8px"
+              ></i>
+              Transparent transactions
+            </div>
+            <div class="detail-feature-item">
+              <i
+                class="fas fa-star"
+                style="color: #06b6d4; margin-right: 8px"
+              ></i>
+              Automated billing system
+            </div>
+          </div>
+          <div
+            style="
+              background: linear-gradient(135deg, #1f7b8c10, #2c9c7c10);
+              padding: 1.5rem;
+              border-radius: 1rem;
+              text-align: center;
+            "
+          >
+            <h3 style="color: #06b6d4">Simplify your payments</h3>
+            <button class="demo-btn">Request a Demo</button>
+          </div>
+        </div>
+      </div>
+    </div>
+    <footer>
+      <p>&copy; 2025 EduManage Pro — Fee Management Module</p>
+    </footer>
+  </body>
+</html>

@@ -1,0 +1,65 @@
+{% extends "base/layout.html" %}
+
+{% block title %}{{ section }} Timetable - SMS{% endblock %}
+{% block page_title %}Section Timetable{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <div class="row">
+        <div class="col-md-12">
+            <div class="card">
+                <div class="card-header d-flex justify-content-between align-items-center">
+                    <div>
+                        <i class="fas fa-calendar"></i> {{ section.class_model }} - {{ section.name }} Timetable
+                        <div class="small text-muted">Week beginning: {{ week_start }}</div>
+                    </div>
+                    <div>
+                        <a href="{% url 'timetable:create' %}?section={{ section.id }}" class="btn btn-sm btn-primary">
+                            <i class="fas fa-calendar-plus"></i> Add Entry
+                        </a>
+                        <a href="{% url 'dashboard:teacher_dashboard' %}" class="btn btn-sm btn-outline-secondary">
+                            <i class="fas fa-arrow-left"></i> Back to Dashboard
+                        </a>
+                    </div>
+                </div>
+                <div class="card-body">
+                    <table class="table table-sm mb-0">
+                        <thead>
+                            <tr>
+                                <th>Day</th>
+                                <th>Start</th>
+                                <th>End</th>
+                                <th>Subject</th>
+                                <th>Teacher</th>
+                                <th>Room</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for item in timetables %}
+                            <tr>
+                                <td>{{ item.get_day_display }}</td>
+                                <td>{{ item.start_time|time:"H:i" }}</td>
+                                <td>{{ item.end_time|time:"H:i" }}</td>
+                                <td>{{ item.subject.name }}</td>
+                                <td>
+                                    {% if item.teacher %}
+                                        {{ item.teacher.user.get_full_name }}
+                                    {% else %}
+                                        -
+                                    {% endif %}
+                                </td>
+                                <td>{{ item.room|default:"N/A" }}</td>
+                            </tr>
+                            {% empty %}
+                            <tr>
+                                <td colspan="6" class="text-center text-muted">No timetable entries found for this week.</td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

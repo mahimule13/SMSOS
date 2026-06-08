@@ -1,0 +1,67 @@
+{% extends "base/layout.html" %}
+
+{% block title %}My Homework - SMS{% endblock %}
+{% block page_title %}My Homework Assignments{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <div class="row mb-4">
+        <div class="col-md-8">
+            <h4>Homework Assignments</h4>
+        </div>
+        <div class="col-md-4 text-end">
+            {% if view_role == 'teacher' %}
+            <a href="{% url 'homework:create' %}" class="btn btn-primary">
+                <i class="fas fa-plus"></i> New Homework
+            </a>
+            {% endif %}
+        </div>
+    </div>
+
+    {% if homework %}
+    <div class="card">
+        <div class="table-responsive">
+            <table class="table table-hover">
+                <thead>
+                    <tr>
+                        <th>Title</th>
+                        <th>Section</th>
+                        <th>Subject</th>
+                        <th>Due Date</th>
+                        <th>Status</th>
+                        <th>Action</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for item in homework %}
+                    <tr>
+                        <td>{{ item.title }}</td>
+                        <td>{{ item.section }}</td>
+                        <td>{{ item.subject.name }}</td>
+                        <td>{{ item.due_date }}</td>
+                        <td>{{ item.get_status_display }}</td>
+                        <td>
+                            {% if view_role == 'teacher' %}
+                                <a href="{% url 'homework:detail' item.id %}" class="btn btn-sm btn-info">View</a>
+                            {% else %}
+                                <a href="{% url 'homework:detail' item.id %}" class="btn btn-sm btn-info">View</a>
+                                {% if item.id in submitted_homework_ids %}
+                                    <span class="badge bg-success ms-2">Submitted</span>
+                                {% else %}
+                                    <a href="{% url 'homework:submit' item.id %}" class="btn btn-sm btn-primary ms-2">Submit</a>
+                                {% endif %}
+                            {% endif %}
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+    {% else %}
+    <div class="card p-4 text-center">
+        <p class="mb-0">No homework assignments yet. Create one to assign work to your class members.</p>
+    </div>
+    {% endif %}
+</div>
+{% endblock %}

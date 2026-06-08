@@ -1,0 +1,24 @@
+{% extends "base/layout.html" %}
+
+{% block title %}Notice Details - SMS{% endblock %}
+{% block page_title %}Notice Details{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+  <div class="row">
+    <div class="col-md-8">
+      <div class="card">
+        <div class="card-header d-flex justify-content-between align-items-center">
+          <h5 class="mb-0">{{ notice.title }}</h5>
+          <span class="badge bg-secondary">{{ notice.priority|upper }}</span>
+        </div>
+        <div class="card-body">
+          <p>{{ notice.content|linebreaksbr }}</p>
+          <small class="text-muted">Created: {{ notice.created_at }}</small>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}
+

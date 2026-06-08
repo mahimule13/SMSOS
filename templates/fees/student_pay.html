@@ -1,0 +1,420 @@
+{% extends "base/layout.html" %}
+
+{% block title %}Pay Fees - SMS{% endblock %}
+{% block page_title %}Pay Fees{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+
+    {% if messages %}
+        {% for message in messages %}
+            <div class="alert alert-{{ message.tags }}">
+                {{ message }}
+            </div>
+        {% endfor %}
+    {% endif %}
+
+
+
+
+    <!-- Student Info -->
+    <div class="row mb-4">
+        <div class="col-md-12">
+            <div class="card shadow-sm">
+                <div class="card-header">
+                    <i class="fas fa-wallet"></i> Fee Payment
+                </div>
+
+                <div class="card-body">
+                    <p class="mb-2">
+                        <strong>Student:</strong>
+                        {{ student.user.get_full_name }}
+                    </p>
+
+                    <p class="mb-0">
+                        <strong>Student ID:</strong>
+                        {{ student.student_id }}
+                    </p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="row">
+
+    <!-- Fee History (Paid + Pending) -->
+    <div class="col-md-6 mb-4">
+        <h5 class="mb-3">Fee History (Paid + Pending)</h5>
+
+        <div class="card shadow-sm">
+            <div class="card-body">
+
+                {% if fees_history %}
+                    <div class="table-responsive">
+                        <table class="table table-bordered table-hover">
+                            <thead class="table-light">
+                                <tr>
+                                    <th>Month</th>
+                                    <th>Fee Type</th>
+                                    <th>Due</th>
+                                    <th>Paid</th>
+                                    <th>Balance</th>
+                                    <th>Status</th>
+                                    <th>Receipt</th>
+                                    <th>Action</th>
+                                </tr>
+                            </thead>
+
+                            <tbody>
+                                {% for f in fees_history %}
+                                    <tr>
+
+                                        <td>{{ f.month|date:"F Y" }}</td>
+                                        <td>{{ f.fee_structure.fee_type }}</td>
+                                        <td>₹{{ f.amount_due }}</td>
+                                        <td>₹{{ f.amount_paid }}</td>
+                                        <td><strong>₹{{ f.amount_due_balance }}</strong></td>
+
+                                        <td>
+                                            {% if f.status == 'paid' %}
+                                                <span class="badge bg-success">PAID</span>
+                                            {% elif f.status == 'partial' %}
+                                                <span class="badge bg-warning text-dark">PARTIAL</span>
+                                            {% else %}
+                                                <span class="badge bg-danger">PENDING</span>
+                                            {% endif %}
+                                        </td>
+
+                                        <!-- Receipt Download -->
+                                        <td>
+                                            {% if f.receipt and f.receipt.pdf_file %}
+                                                <a href="{{ f.receipt.pdf_file.url }}"
+                                                   class="btn btn-sm btn-success"
+                                                   target="_blank">
+                                                    Download
+                                                </a>
+                                            {% else %}
+                                                <span class="text-muted">No Receipt</span>
+                                            {% endif %}
+                                        </td>
+
+                                        <!-- View Receipt (ONLY navigation) -->
+                                        <td>
+                                            {% if f.receipt and f.receipt.pdf_file %}
+                                                <a href="{% url 'fees:receipt_preview' f.receipt.pdf_file.name %}"
+                                                   class="btn btn-sm btn-primary">
+                                                    View
+                                                </a>
+                                            {% else %}
+                                                <span class="text-muted">No Receipt</span>
+                                            {% endif %}
+                                        </td>
+
+                                    </tr>
+                                {% endfor %}
+                            </tbody>
+
+                        </table>
+                    </div>
+                {% else %}
+                    <div class="alert alert-info mb-0">
+                        No fee history found.
+                    </div>
+                {% endif %}
+
+            </div>
+        </div>
+    </div>
+
+</div>
+        <!-- Payment Form -->
+        <div class="col-md-6 mb-4">
+
+            <h5 class="mb-3">Pending / Partial Fees</h5>
+
+            <div class="card shadow-sm">
+                <div class="card-body">
+
+                    {% if fees %}
+
+                        <div class="table-responsive">
+
+                            <table class="table table-bordered table-hover">
+
+                                <thead class="table-light">
+                                    <tr>
+                                        <th>Month</th>
+                                        <th>Fee Type</th>
+                                        <th>Due</th>
+                                        <th>Paid</th>
+                                        <th>Balance</th>
+                                        <th>Status</th>
+                                    </tr>
+                                </thead>
+
+                                <tbody>
+
+                                    {% for f in fees %}
+
+                                        <tr>
+
+                                            <td>
+                                                {{ f.month|date:"F Y" }}
+                                            </td>
+
+                                            <td>
+                                                {{ f.fee_structure.fee_type }}
+                                            </td>
+
+                                            <td>
+                                                ₹{{ f.amount_due }}
+                                            </td>
+
+                                            <td>
+                                                ₹{{ f.amount_paid }}
+                                            </td>
+
+                                            <td>
+                                                <strong>
+                                                    ₹{{ f.amount_due_balance }}
+                                                </strong>
+                                            </td>
+
+                                            <td>
+
+                                                {% if f.status == 'paid' %}
+
+                                                    <span class="badge bg-success">
+                                                        PAID
+                                                    </span>
+
+                                                {% elif f.status == 'partial' %}
+
+                                                    <span class="badge bg-warning text-dark">
+                                                        PARTIAL
+                                                    </span>
+
+                                                {% else %}
+
+                                                    <span class="badge bg-danger">
+                                                        PENDING
+                                                    </span>
+
+                                                {% endif %}
+
+                                            </td>
+
+                                        </tr>
+
+                                    {% endfor %}
+
+                                </tbody>
+
+                            </table>
+
+                        </div>
+
+                    {% else %}
+
+                        <div class="alert alert-success mb-0">
+                            No pending or partial fees.
+                        </div>
+
+                    {% endif %}
+
+                </div>
+            </div>
+        </div>
+
+        <!-- Payment Form -->
+        <div class="col-md-6 mb-4">
+
+            <h5 class="mb-3">Make Payment</h5>
+
+            <div class="card shadow-sm">
+                <div class="card-body">
+
+                    {% if fees %}
+
+                        {% if not hide_payment_form %}
+
+                            <form method="POST">
+
+                                {% csrf_token %}
+
+                                <div class="mb-3">
+
+                                    <label class="form-label">
+                                        Select Fee
+                                    </label>
+
+                                    <select
+                                        name="fee_id"
+                                        class="form-select"
+                                        required
+                                    >
+
+                                        {% for f in fees %}
+
+                                            <option value="{{ f.id }}">
+
+                                                {{ f.month|date:"F Y" }}
+                                                -
+                                                ₹{{ f.amount_due_balance }}
+
+                                            </option>
+
+                                        {% endfor %}
+
+                                    </select>
+
+                                </div>
+
+                                <div class="mb-3">
+
+                                    <label class="form-label">
+                                        Amount Paid
+                                    </label>
+
+                                    <input
+                                        type="number"
+                                        name="amount_paid"
+                                        class="form-control"
+                                        step="0.01"
+                                        min="1"
+                                        placeholder="Enter amount"
+                                        required
+                                    >
+
+                                </div>
+
+                                <div class="mb-3">
+
+                                    <label class="form-label">
+                                        Payment Type
+                                    </label>
+
+                                    <select
+                                        name="payment_method"
+                                        class="form-select"
+                                        required
+                                        id="payment_method_select"
+                                    >
+
+                                        <option value="upi">UPI</option>
+                                        <option value="online">PhonePe / Google Pay / Paytm / NaviPay</option>
+                                        <option value="cash">Cash</option>
+                                        <option value="bank_transfer">Bank Transfer</option>
+                                        <option value="check">Card / Check</option>
+
+                                    </select>
+
+                                </div>
+
+                                <div class="mb-3" id="upi_extra" style="display:none;">
+                                    <label class="form-label">UPI ID (VPA)</label>
+                                    <input type="text" name="payer_vpa" class="form-control" placeholder="name@bank" />
+                                </div>
+
+                                <div class="mb-3" id="online_extra" style="display:none;">
+                                    <label class="form-label">Payment App / Wallet</label>
+                                    <select name="upi_app" class="form-select">
+                                        <option value="phonepe">PhonePe</option>
+                                        <option value="googlepay">Google Pay</option>
+                                        <option value="paytm">Paytm</option>
+                                        <option value="navi">NaviPay</option>
+                                    </select>
+                                    <label class="form-label mt-2">UPI ID (VPA)</label>
+                                    <input type="text" name="payer_vpa" class="form-control" placeholder="name@bank" />
+                                </div>
+
+                                <div class="mb-3" id="card_extra" style="display:none;">
+                                    <label class="form-label">Card Number</label>
+                                    <input type="text" name="card_number" class="form-control" placeholder="1234 5678 9012 3456" />
+                                </div>
+
+                                <div class="mb-3" id="bank_extra" style="display:none;">
+                                    <label class="form-label">Bank Name</label>
+                                    <input type="text" name="bank_name" class="form-control" placeholder="HDFC / SBI / ICICI" />
+                                    <label class="form-label mt-2">Account Number</label>
+                                    <input type="text" name="account_number" class="form-control" placeholder="Enter account number" inputmode="numeric" pattern="[0-9]{6,20}" />
+                                    <label class="form-label mt-2">IFSC Code</label>
+                                    <input type="text" name="ifsc_code" class="form-control" placeholder="IFSC" />
+                                </div>
+
+                                <script>
+                                    (function () {
+                                        const sel = document.getElementById('payment_method_select');
+                                        const upi = document.getElementById('upi_extra');
+                                        const online = document.getElementById('online_extra');
+                                        const card = document.getElementById('card_extra');
+                                        const bank = document.getElementById('bank_extra');
+
+                                        function hideAll() {
+                                            upi.style.display = 'none';
+                                            online.style.display = 'none';
+                                            card.style.display = 'none';
+                                            bank.style.display = 'none';
+                                        }
+
+                                        function sync() {
+                                            hideAll();
+                                            const v = sel.value;
+                                            if (v === 'upi') upi.style.display = 'block';
+                                            else if (v === 'online') online.style.display = 'block';
+                                            else if (v === 'check') card.style.display = 'block';
+                                            else if (v === 'bank_transfer') bank.style.display = 'block';
+                                        }
+
+                                        sel.addEventListener('change', sync);
+                                        sync();
+                                    })();
+                                </script>
+
+
+                                <div class="mb-3">
+
+                                    <label class="form-label">
+                                        Remarks
+                                    </label>
+
+                                    <textarea
+                                        name="remarks"
+                                        class="form-control"
+                                        rows="2"
+                                        placeholder="Optional"
+                                    ></textarea>
+
+                                </div>
+
+                                <button
+                                    type="submit"
+                                    class="btn btn-primary w-100"
+                                >
+
+                                    <i class="fas fa-credit-card"></i>
+                                    Pay Now
+
+                                </button>
+
+                            </form>
+
+                        {% endif %}
+
+                    {% else %}
+
+                        <div class="alert alert-info mb-0">
+                            Nothing to pay right now.
+                        </div>
+
+                    {% endif %}
+
+                </div>
+            </div>
+
+        </div>
+
+    </div>
+
+</div>
+{% endblock %}
