@@ -25,6 +25,20 @@ urlpatterns = [
         name='admin_dashboard'
     ),
 
+    # Expenses panel for admin (salary payments, fuel, other expenses)
+    path(
+        'expenses/',
+        views.expenses_panel,
+        name='expenses'
+    ),
+
+    # API: teacher salary info
+    path(
+        'api/teacher-salary/<int:teacher_id>/',
+        views.api_teacher_salary,
+        name='api_teacher_salary'
+    ),
+
     # ====================================
     # PRINCIPAL DASHBOARD
     # ====================================
@@ -34,7 +48,7 @@ urlpatterns = [
         views.principal_dashboard,
         name='principal_dashboard'
     ),
-
+    
     # ====================================
     # TEACHER DASHBOARD
     # ====================================
@@ -84,5 +98,10 @@ urlpatterns = [
         views.dashboard_data,
         name='dashboard_data'
     ),
-
+    path(
+    'principal/transport/bus/<int:bus_id>/students/',
+    views.bus_students,
+    name='bus_students'
+    ),
+    
 ]

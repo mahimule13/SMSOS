@@ -1,0 +1,107 @@
+{% extends "base/layout.html" %}
+
+{% block title %}Report Card - SMS{% endblock %}
+{% block page_title %}Report Card{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+  <div class="row mb-3">
+    <div class="col-md-12">
+      <div class="card">
+        <div class="card-header">
+          <i class="fas fa-file-alt"></i> Your Report Cards
+        </div>
+        <div class="card-body">
+          <div class="row mb-3">
+            <div class="col-sm-6"><strong>Name:</strong> {{ student.user.get_full_name }}</div>
+            <div class="col-sm-6"><strong>Student ID:</strong> {{ student.student_id }}</div>
+          </div>
+          <div class="row mb-3">
+            <div class="col-sm-4"><strong>Class:</strong> {{ student.section.class_model.standard }}</div>
+            <div class="col-sm-4"><strong>Section:</strong> {{ student.section.name }}</div>
+            <div class="col-sm-4"><strong>Roll No:</strong> {{ student.roll_number }}</div>
+          </div>
+
+          <hr>
+
+          {% if report_cards %}
+            <div class="table-responsive">
+              <table class="table table-bordered align-middle">
+                <thead class="table-light">
+                  <tr>
+                    <th>Exam</th>
+                    <th>Total Marks</th>
+                    <th>Percentage</th>
+                    <th>Grade</th>
+                    <th>Result</th>
+                    <th>Remarks</th>
+                    <th style="width: 170px;">Download</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {% for rc in report_cards %}
+
+                    <tr>
+                      <td><strong>{{ rc.exam.name }}</strong></td>
+                      <td>{{ rc.total_marks }}</td>
+                      <td>{{ rc.percentage }}%</td>
+                      <td><span class="badge bg-primary">{{ rc.grade }}</span></td>
+                      <td>
+                        {% if rc.total_marks >= rc.exam.passing_marks %}
+                          <span class="badge bg-success">Pass</span>
+                        {% else %}
+                          <span class="badge bg-danger">Fail</span>
+                        {% endif %}
+                      </td>
+                      <td style="max-width: 320px;">{{ rc.remarks|default:"-"|truncatechars:120 }}</td>
+                      <td>
+                        <a class="btn btn-success btn-sm w-100" href="{% url 'exams:reportcard_download_pdf' rc.student.id rc.exam.id %}">
+                          <i class="fas fa-download"></i> PDF
+                        </a>
+                      </td>
+                    </tr>
+                    <tr>
+                      <td colspan="7" class="p-0">
+                        <div class="p-3 bg-light">
+                          <strong>Subjects:</strong>
+                          <div class="table-responsive mt-2">
+                            <table class="table table-sm table-striped mb-0">
+                              <thead>
+                                <tr>
+                                  <th>Subject</th>
+                                  <th class="text-end">Marks Obtained</th>
+                                  <th class="text-end">Total Marks</th>
+                                </tr>
+                              </thead>
+                              <tbody>
+                                {% for sm in rc.student.marks.all %}
+                                  {% if sm.exam_id == rc.exam_id %}
+                                    <tr>
+                                      <td>{{ sm.subject.name }}</td>
+                                      <td class="text-end">{{ sm.marks_obtained }}</td>
+                                      <td class="text-end">{{ rc.exam.total_marks }}</td>
+                                    </tr>
+                                  {% endif %}
+                                {% empty %}
+                                  <tr><td colspan="3" class="text-center text-muted">No marks entered.</td></tr>
+                                {% endfor %}
+                              </tbody>
+                            </table>
+                          </div>
+                        </div>
+                      </td>
+                    </tr>
+                  {% endfor %}
+                </tbody>
+              </table>
+            </div>
+          {% else %}
+            <p class="text-muted mb-0">No report cards available yet.</p>
+          {% endif %}
+
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}

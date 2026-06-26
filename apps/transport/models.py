@@ -8,6 +8,13 @@ class Bus(models.Model):
     model = models.CharField(max_length=100, blank=True)
     registration_date = models.DateField()
     is_active = models.BooleanField(default=True)
+    teacher = models.ForeignKey(
+        'teachers.Teacher',
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name='assigned_buses'
+    )
     created_at = models.DateTimeField(auto_now_add=True)
     
     class Meta:

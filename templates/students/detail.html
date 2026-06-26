@@ -1,0 +1,201 @@
+{% extends "base/layout.html" %}
+
+{% block title %}Student Details - SMS{% endblock %}
+{% block page_title %}Student Details{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <div class="d-flex justify-content-between align-items-center mb-3">
+        <div>
+            <h3>{{ student.user.get_full_name }}</h3>
+            <p class="mb-0 text-muted">Student ID: {{ student.student_id }} | Admission: {{ student.admission_number }}</p>
+        </div>
+        <div>
+            <a href="{% url 'students:list' %}" class="btn btn-secondary">Back to Students</a>
+        </div>
+    </div>
+
+    {% if messages %}
+        {% for message in messages %}
+            <div class="alert alert-{{ message.tags }}">{{ message }}</div>
+        {% endfor %}
+    {% endif %}
+
+    <div class="row g-3">
+        <div class="col-lg-4">
+            <div class="card">
+                <div class="card-body text-center">
+                    {% if student.photo %}
+                        <img src="{{ student.photo.url }}" alt="{{ student.user.get_full_name }}" class="img-fluid rounded mb-3" style="max-height: 220px;">
+                    {% else %}
+                        <div class="bg-light rounded mb-3 d-flex align-items-center justify-content-center" style="height: 220px;">
+                            <span class="text-muted">No photo</span>
+                        </div>
+                    {% endif %}
+                    <h5>{{ student.user.get_full_name }}</h5>
+                    <p class="mb-1"><strong>Roll No:</strong> {{ student.roll_number }}</p>
+                    <p class="mb-1"><strong>Class / Section:</strong> {{ student.section }}</p>
+                    <p class="mb-0"><strong>Status:</strong> {% if student.is_active %}Active{% else %}Inactive{% endif %}</p>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-lg-8">
+            <div class="card mb-3">
+                <div class="card-header"><strong>Personal Information</strong></div>
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-md-6 mb-2"><strong>Email:</strong> {{ student.email }}</div>
+                        <div class="col-md-6 mb-2"><strong>Phone:</strong> {{ student.phone }}</div>
+                        <div class="col-md-6 mb-2"><strong>Date of Birth:</strong> {{ student.dob }}</div>
+                        <div class="col-md-6 mb-2"><strong>Gender:</strong> {{ student.get_gender_display }}</div>
+                        <div class="col-md-6 mb-2"><strong>Blood Group:</strong> {{ student.blood_group }}</div>
+                        <div class="col-md-6 mb-2"><strong>Admission Date:</strong> {{ student.admission_date }}</div>
+                    </div>
+                    <div class="mt-2"><strong>Address:</strong> {{ student.address }}</div>
+                </div>
+            </div>
+
+            <div class="card mb-3">
+                <div class="card-header"><strong>Parent / Guardian Information</strong></div>
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-md-6 mb-2"><strong>Father:</strong> {{ student.father_name }}</div>
+                        <div class="col-md-6 mb-2"><strong>Father Phone:</strong> {{ student.father_phone }}</div>
+                        <div class="col-md-6 mb-2"><strong>Mother:</strong> {{ student.mother_name }}</div>
+                        <div class="col-md-6 mb-2"><strong>Mother Phone:</strong> {{ student.mother_phone }}</div>
+                        <div class="col-md-6 mb-2"><strong>Guardian:</strong> {{ student.guardian_name }}</div>
+                        <div class="col-md-6 mb-2"><strong>Guardian Phone:</strong> {{ student.guardian_phone }}</div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="card mb-3">
+                <div class="card-header"><strong>Marks</strong></div>
+                <div class="card-body">
+                    {% if marks %}
+                        <div class="table-responsive">
+                            <table class="table table-sm table-bordered">
+                                <thead>
+                                    <tr>
+                                        <th>Exam</th>
+                                        <th>Subject</th>
+                                        <th>Marks Obtained</th>
+                                        <th>Grade</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {% for mark in marks %}
+                                        <tr>
+                                            <td>{{ mark.exam }}</td>
+                                            <td>{{ mark.subject }}</td>
+                                            <td>{{ mark.marks_obtained }}</td>
+                                            <td>{{ mark.get_grade }}</td>
+                                        </tr>
+                                    {% endfor %}
+                                </tbody>
+                            </table>
+                        </div>
+                    {% else %}
+                        <p class="text-muted mb-0">No marks found.</p>
+                    {% endif %}
+                </div>
+            </div>
+
+            <div class="card">
+                <div class="card-header"><strong>Report Cards</strong></div>
+                <div class="card-body">
+                    {% if report_cards %}
+                        <div class="table-responsive">
+                            <table class="table table-sm table-bordered">
+                                <thead>
+                                    <tr>
+                                        <th>Exam</th>
+                                        <th>Total Marks</th>
+                                        <th>Percentage</th>
+                                        <th>Grade</th>
+                                        <th>Remarks</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {% for card in report_cards %}
+                                        <tr>
+                                            <td>{{ card.exam }}</td>
+                                            <td>{{ card.total_marks }}</td>
+                                            <td>{{ card.percentage }}%</td>
+                                            <td>{{ card.grade }}</td>
+                                            <td>{{ card.remarks|default:'-' }}</td>
+                                        </tr>
+                                    {% endfor %}
+                                </tbody>
+                            </table>
+                        </div>
+                    {% else %}
+                        <p class="text-muted mb-0">No report cards found.</p>
+                    {% endif %}
+                </div>
+            </div>
+
+            <div class="card mt-3">
+                <div class="card-header d-flex justify-content-between align-items-center">
+                    <div>
+                        <i class="fas fa-calendar-alt"></i> Attendance Calendar
+                        <small class="text-muted">({{ attendance_calendar.month_label }})</small>
+                    </div>
+                    <div>
+                        <a class="btn btn-sm btn-outline-secondary" href="?month={{ attendance_calendar.prev_month }}" aria-label="Previous month">&laquo;</a>
+                        <form method="get" class="d-inline">
+                            <input type="month" name="month" class="form-control form-control-sm d-inline" value="{{ attendance_calendar.year }}-{{ attendance_calendar.month|stringformat:'02d' }}" style="width: 140px;" onchange="this.form.submit()" />
+                        </form>
+                        <a class="btn btn-sm btn-outline-secondary" href="?month={{ attendance_calendar.next_month }}" aria-label="Next month">&raquo;</a>
+                    </div>
+                </div>
+                <div class="card-body">
+                    <div class="mb-3">
+                        <div class="d-flex gap-3 flex-wrap">
+                            <div class="d-flex align-items-center gap-2"><span class="badge bg-success">&nbsp;</span> Present</div>
+                            <div class="d-flex align-items-center gap-2"><span class="badge bg-danger">&nbsp;</span> Absent</div>
+                            <div class="d-flex align-items-center gap-2"><span class="badge bg-warning">&nbsp;</span> Half Day</div>
+                            <div class="d-flex align-items-center gap-2"><span class="badge bg-secondary">&nbsp;</span> Holiday</div>
+                        </div>
+                    </div>
+                    <div class="table-responsive">
+                        <table class="table table-sm mb-0" style="border-collapse: collapse;">
+                            <thead>
+                                <tr>
+                                    <th>Mon</th>
+                                    <th>Tue</th>
+                                    <th>Wed</th>
+                                    <th>Thu</th>
+                                    <th>Fri</th>
+                                    <th>Sat</th>
+                                    <th>Sun</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for week in attendance_calendar.weeks %}
+                                    <tr>
+                                        {% for cell in week %}
+                                            {% if cell.status == 'present' %}
+                                                <td class="p-2" style="background:#dcfce7; color:#065f46; font-weight:600; opacity:{% if cell.in_month %}1{% else %}0.35{% endif %};">{{ cell.day }}</td>
+                                            {% elif cell.status == 'absent' %}
+                                                <td class="p-2" style="background:#fee2e2; color:#991b1b; font-weight:600; opacity:{% if cell.in_month %}1{% else %}0.35{% endif %};">{{ cell.day }}</td>
+                                            {% elif cell.status == 'half' %}
+                                                <td class="p-2" style="background:#fef3c7; color:#92400e; font-weight:600; opacity:{% if cell.in_month %}1{% else %}0.35{% endif %};">{{ cell.day }}</td>
+                                            {% elif cell.status == 'holiday' %}
+                                                <td class="p-2" style="background:#e5e7eb; color:#374151; font-weight:600; opacity:{% if cell.in_month %}1{% else %}0.35{% endif %};">{{ cell.day }}</td>
+                                            {% else %}
+                                                <td class="p-2" style="opacity:{% if cell.in_month %}1{% else %}0.35{% endif %};">{{ cell.day }}</td>
+                                            {% endif %}
+                                        {% endfor %}
+                                    </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

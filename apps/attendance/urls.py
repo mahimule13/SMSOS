@@ -8,5 +8,16 @@ urlpatterns = [
     path('reports/', views.attendance_reports, name='reports'),
     path('teacher/', views.teacher_attendance, name='teacher_attendance'),
     path('student/', views.student_attendance, name='student_attendance'),
+    path(
+    'export/excel/',
+    views.export_excel,
+    name='export_excel'
+),
+
+path(
+    'export/pdf/',
+    views.export_pdf,
+    name='export_pdf'
+),
 ]
 

@@ -182,10 +182,14 @@ def trigger_twilio_ivr_calls(
     valid_phones = _iter_valid_phones(phones)
 
     if not valid_phones:
-        raise RuntimeError(
-            "Twilio IVR: no valid destination phone numbers after normalization. "
-            "Check stored parent phone fields and expected country format (10 digits -> +91)."
+        logger.warning(
+            "[IVR] no valid destination phone numbers after normalization; skipping call request"
         )
+        return {
+            "attempted": 0,
+            "successful_calls": 0,
+            "results": [],
+        }
 
     safe_message = escape(message)
 

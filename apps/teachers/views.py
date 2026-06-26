@@ -9,7 +9,7 @@ from apps.accounts.decorators import admin_required, role_required
 from apps.accounts.models import UserProfile
 from apps.classes.models import Subject
 from .models import Teacher, TeacherAttendance, TeacherLeaveRequest
-
+from django.shortcuts import render, redirect
 
 @login_required(login_url='login')
 @role_required('super_admin', 'school_admin', 'principal')
@@ -100,7 +100,28 @@ def create_teacher(request):
 @login_required(login_url='login')
 def teacher_detail(request, pk):
     teacher = get_object_or_404(Teacher, pk=pk)
-    context = {'teacher': teacher}
+    attendance_qs = TeacherAttendance.objects.filter(teacher=teacher)
+    total_attendance = attendance_qs.count()
+    present_attendance = attendance_qs.filter(is_present=True).count()
+    absent_attendance = total_attendance - present_attendance
+    attendance_percentage = round((present_attendance / total_attendance) * 100, 2) if total_attendance else 0
+    today_record = attendance_qs.filter(date=date.today()).first()
+    if today_record:
+        today_status = 'Present' if today_record.is_present else 'Absent'
+        today_remark = today_record.remarks
+    else:
+        today_status = 'Not marked'
+        today_remark = ''
+
+    context = {
+        'teacher': teacher,
+        'total_attendance': total_attendance,
+        'present_attendance': present_attendance,
+        'absent_attendance': absent_attendance,
+        'attendance_percentage': attendance_percentage,
+        'today_status': today_status,
+        'today_remark': today_remark,
+    }
     return render(request, 'teachers/detail.html', context)
 
 
@@ -215,3 +236,31 @@ def leave_requests(request):
     leaves = TeacherLeaveRequest.objects.select_related('teacher__user').all()
     context = {'leaves': leaves}
     return render(request, 'teachers/leave_requests.html', context)
+@login_required(login_url='login')
+@role_required('teacher')
+def apply_leave(request):
+
+    teacher = Teacher.objects.get(user=request.user)
+
+    if request.method == "POST":
+
+        TeacherLeaveRequest.objects.create(
+            teacher=teacher,
+            leave_type=request.POST.get("leave_type"),
+            start_date=request.POST.get("start_date"),
+            end_date=request.POST.get("end_date"),
+            reason=request.POST.get("reason")
+        )
+
+        messages.success(request, "Leave request submitted successfully.")
+        return redirect("teachers:apply_leave")
+
+    leaves = TeacherLeaveRequest.objects.filter(
+        teacher=teacher
+    ).order_by("-created_at")
+
+    return render(
+        request,
+        "teachers/apply_leave.html",
+        {"leaves": leaves}
+    )

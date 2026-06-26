@@ -18,16 +18,41 @@ def class_list(request):
 @role_required('super_admin', 'school_admin', 'principal')
 def create_class(request):
     if request.method == 'POST':
-        standard = request.POST.get('standard')
-        name = request.POST.get('name')
-        
+        standard = request.POST.get('standard', '').strip()
+        section_input = request.POST.get('sections', '').strip()
+
+        if not standard:
+            messages.error(request, 'Please provide class standard.')
+            return render(request, 'classes/create.html')
+
         if ClassModel.objects.filter(standard=standard).exists():
             messages.error(request, 'Class already exists')
         else:
-            ClassModel.objects.create(standard=standard, name=name)
-            messages.success(request, 'Class created successfully')
+            class_obj = ClassModel.objects.create(
+                standard=standard,
+                name=f"Class {standard}"
+            )
+
+            section_names = []
+            if section_input:
+                section_names = [s.strip() for s in section_input.replace('\n', ',').split(',') if s.strip()]
+
+            for section_name in section_names:
+                Section.objects.get_or_create(
+                    class_model=class_obj,
+                    name=section_name,
+                    defaults={'is_active': True}
+                )
+
+            if section_names:
+                messages.success(
+                    request,
+                    f'Class created successfully and sections {", ".join(section_names)} added.'
+                )
+            else:
+                messages.success(request, 'Class created successfully')
             return redirect('classes:list')
-    
+
     return render(request, 'classes/create.html')
 
 
@@ -35,14 +60,50 @@ def create_class(request):
 @role_required('super_admin', 'school_admin', 'principal')
 def edit_class(request, pk):
     class_obj = get_object_or_404(ClassModel, pk=pk)
-    
+
     if request.method == 'POST':
-        class_obj.name = request.POST.get('name')
-        class_obj.standard = request.POST.get('standard')
+        standard = request.POST.get('standard', '').strip()
+        section_input = request.POST.get('sections', '').strip()
+
+        if not standard:
+            messages.error(request, 'Please provide class standard.')
+            return render(request, 'classes/edit.html', {'class': class_obj})
+
+        if (
+            ClassModel.objects.filter(standard=standard)
+            .exclude(pk=class_obj.pk)
+            .exists()
+        ):
+            messages.error(request, 'Another class with this standard already exists.')
+            return render(request, 'classes/edit.html', {'class': class_obj})
+
+        class_obj.standard = standard
+        class_obj.name = f"Class {standard}"
         class_obj.save()
-        messages.success(request, 'Class updated successfully')
+
+        section_names = [
+            s.strip()
+            for s in section_input.replace('\n', ',').split(',')
+            if s.strip()
+        ]
+
+        for section_name in section_names:
+            Section.objects.get_or_create(
+                class_model=class_obj,
+                name=section_name,
+                defaults={'is_active': True}
+            )
+
+        if section_names:
+            messages.success(
+                request,
+                f'Class updated successfully and sections {", ".join(section_names)} saved.'
+            )
+        else:
+            messages.success(request, 'Class updated successfully')
+
         return redirect('classes:list')
-    
+
     context = {'class': class_obj}
     return render(request, 'classes/edit.html', context)
 

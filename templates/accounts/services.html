@@ -398,7 +398,7 @@
         </button>
         <div class="collapse navbar-collapse" id="navbarNav">
                 <ul class="navbar-nav ms-auto">
-                    <li class="nav-item"><a class="nav-link" href="#home">Home</a></li>
+                    <li class="nav-item"><a class="nav-link" href="{% url 'accounts:index' %}">Home</a></li>
                     <li class="nav-item"><a class="nav-link" href="{% url 'accounts:smsabout' %}">About</a></li>
                     <li class="nav-item"><a class="nav-link" href="{% url 'accounts:services'%}">Services</a></li>
                     <li class="nav-item"><a class="nav-link" href="{% url 'accounts:pricing'%}">Prices</a></li>
@@ -486,7 +486,7 @@
                             certificates, and activities.
                         </p>
 
-                        <a href="#"
+                        <a href="{%url 'accounts:smsstudent'%}"
                            class="btn btn-primary mt-3">
                             View Module
                         </a>
@@ -519,7 +519,7 @@
                             and payment tracking.
                         </p>
 
-                        <a href="#"
+                        <a href="{%url 'accounts:smsfee'%}"
                            class="btn btn-primary mt-3">
                             View Module
                         </a>
@@ -552,7 +552,7 @@
                             grading, and communication.
                         </p>
 
-                        <a href="#"
+                        <a href="{%url 'accounts:smsteacher'%}"
                            class="btn btn-primary mt-3">
                             View Module
                         </a>
@@ -585,7 +585,7 @@
                             and institutional analytics.
                         </p>
 
-                        <a href="#"
+                        <a href="{% url 'accounts:smsanalytic' %}"
                            class="btn btn-primary mt-3">
                             View Module
                         </a>
@@ -618,7 +618,7 @@
                             alerts, and parent updates instantly.
                         </p>
 
-                        <a href="#"
+                        <a href="{%url 'accounts:smsparent'%}"
                            class="btn btn-primary mt-3">
                             View Module
                         </a>
@@ -651,7 +651,7 @@
                             resources, and backups securely.
                         </p>
 
-                        <a href="#"
+                        <a href="{%url 'accounts:smslibrary'%}"
                            class="btn btn-primary mt-3">
                             View Module
                         </a>

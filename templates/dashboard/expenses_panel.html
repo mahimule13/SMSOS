@@ -1,0 +1,122 @@
+{% extends "base/layout.html" %}
+
+{% block title %}Expenses - Admin{% endblock %}
+{% block page_title %}Expenses{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <div class="row">
+        <div class="col-md-4">
+            <div class="card">
+                <div class="card-header">
+                    <i class="fas fa-file-invoice-dollar"></i> Add Expense (Fuel / Transport / Other)
+                </div>
+                <div class="card-body">
+                    <form method="post" enctype="multipart/form-data">
+                        {% csrf_token %}
+                        <input type="hidden" name="action" value="add_expense">
+                        <div class="mb-3">
+                            <label class="form-label">Category</label>
+                            <select name="category" class="form-select">
+                                <option value="Fuel">Fuel</option>
+                                <option value="Transport">Transport</option>
+                                <option value="Other">Other</option>
+                            </select>
+                        </div>
+                        <div class="row g-3">
+                            <div class="col-md-6">
+                                <label class="form-label">Amount</label>
+                                <input type="number" name="amount" step="0.01" class="form-control" required>
+                            </div>
+                            <div class="col-md-6">
+                                <label class="form-label">Date</label>
+                                <input type="date" name="date" class="form-control" value="{{ today|date:'Y-m-d' }}" required>
+                            </div>
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label">Description</label>
+                            <textarea name="description" class="form-control" rows="3" placeholder="Enter bill details" required></textarea>
+                        </div>
+                        <div class="row g-3 transport-fields" style="display:none;">
+                            <div class="col-md-4">
+                                <label class="form-label">Bus Number</label>
+                                <input type="text" name="bus_number" class="form-control">
+                            </div>
+                            <div class="col-md-4">
+                                <label class="form-label">Driver Name</label>
+                                <input type="text" name="driver_name" class="form-control">
+                            </div>
+                            <div class="col-md-4">
+                                <label class="form-label">Route</label>
+                                <input type="text" name="route" class="form-control">
+                            </div>
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label">Upload Bill Image / PDF</label>
+                            <input type="file" name="bill_attachment" class="form-control" accept="image/*,.pdf">
+                        </div>
+                        <button class="btn btn-success w-100">Save Expense</button>
+                    </form>
+                </div>
+            </div>
+
+            <div class="card mt-3">
+                <div class="card-header">Quick Filters</div>
+                <div class="card-body">
+                    <form method="get">
+                        <label class="form-label">Expense Type</label>
+                        <select name="type" class="form-select mb-2">
+                            <option value="all" {% if expense_type == 'all' %}selected{% endif %}>All</option>
+                            <option value="fuel" {% if expense_type == 'fuel' %}selected{% endif %}>Fuel</option>
+                            <option value="other" {% if expense_type == 'other' %}selected{% endif %}>Other</option>
+                        </select>
+                        <button class="btn btn-primary w-100">Apply</button>
+                    </form>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-8">
+            <div class="card">
+                <div class="card-header">
+                    <i class="fas fa-wallet"></i> Expense History
+                </div>
+                <div class="card-body p-0">
+                    <div class="table-responsive">
+                        <table class="table table-sm mb-0">
+                            <thead>
+                                <tr>
+                                    <th>Category</th>
+                                    <th>Description</th>
+                                    <th>Amount</th>
+                                    <th>Date</th>
+                                    <th>Bill</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for e in expense_history %}
+                                <tr>
+                                    <td>{{ e.category.name }}</td>
+                                    <td>{{ e.description|truncatechars:50 }}</td>
+                                    <td>₹{{ e.amount|floatformat:2 }}</td>
+                                    <td>{{ e.date }}</td>
+                                    <td>
+                                        {% if e.bill_attachment %}
+                                            <a href="{{ e.bill_attachment.url }}" target="_blank">View</a>
+                                        {% else %}
+                                            —
+                                        {% endif %}
+                                    </td>
+                                </tr>
+                                {% empty %}
+                                <tr><td colspan="5" class="text-center">No expenses found.</td></tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

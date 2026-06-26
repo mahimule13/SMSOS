@@ -1,15 +1,19 @@
-from django.shortcuts import render, redirect
+from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib.auth.decorators import login_required
+from django.contrib import messages
 from django.http import JsonResponse
-from django.db.models import Count, Sum, Avg
+from django.db.models import Count, Sum, Avg, Q
+from django.urls import reverse
+import urllib.parse
 from datetime import date, timedelta
+from calendar import monthrange
 from apps.accounts.decorators import role_required
-
+from apps.transport.models import Bus, StudentTransport
 from apps.students.models import Student, StudentAttendance
 from apps.teachers.models import (
     Teacher,
     TeacherAttendance,
-    TeacherLeaveRequest
+    TeacherLeaveRequest,
 )
 from apps.fees.models import FeeCollection
 from apps.exams.models import (
@@ -30,18 +34,21 @@ from apps.library.models import (
     BookIssue,
     Book
 )
-from apps.transport.models import StudentTransport
+from apps.transport.models import Bus, BusDriver, StudentTransport, BusRoute
 from apps.hostel.models import HostelAllocation
 from apps.finance.models import (
     Income,
-    Expense
+    Expense,
+    ExpenseCategory,
 )
 from apps.noticeboard.models import (
     Notice,
     Event
 )
 from apps.timetable.models import Timetable
-
+from apps.transport.models import Bus, BusDriver
+from django.shortcuts import get_object_or_404, redirect, render
+from django.contrib import messages
 import json
 
 
@@ -112,6 +119,11 @@ def get_dashboard_context(request):
         is_present=True
     ).values('student_id').distinct().count()
 
+    students_absent = StudentAttendance.objects.filter(
+        date=today,
+        is_present=False
+    ).values('student_id').distinct().count()
+
     total_students = Student.objects.filter(
         is_active=True
     ).count()
@@ -128,6 +140,7 @@ def get_dashboard_context(request):
 
 
     context['students_present'] = students_present
+    context['students_absent'] = students_absent
 
     context['attendance_percentage'] = round(
         attendance_percentage,
@@ -216,6 +229,8 @@ def get_dashboard_context(request):
         is_active=True
     ).count()
 
+    teacher_absent_today = max(0, total_teachers - teacher_present_today)
+
     teacher_attendance_percentage = 0
 
     if total_teachers > 0:
@@ -225,13 +240,85 @@ def get_dashboard_context(request):
         ) * 100
 
     context['teacher_present_today'] = teacher_present_today
-
+    context['teacher_absent_today'] = teacher_absent_today
     context['teacher_attendance_percentage'] = round(
         teacher_attendance_percentage,
         2
     )
 
     return context
+
+
+# =========================================================
+# ATTENDANCE REPORT HELPERS
+# =========================================================
+
+def get_monthly_attendance_report_context(request):
+    report_month = request.GET.get('report_month', '')
+    report_class_id = request.GET.get('report_class_id', '').strip()
+
+    try:
+        if report_month:
+            year, month = [int(x) for x in report_month.split('-')]
+            selected_month_date = date(year, month, 1)
+        else:
+            today = date.today()
+            selected_month_date = today.replace(day=1)
+            report_month = selected_month_date.strftime('%Y-%m')
+    except Exception:
+        today = date.today()
+        selected_month_date = today.replace(day=1)
+        report_month = selected_month_date.strftime('%Y-%m')
+
+    report_month_label = selected_month_date.strftime('%B %Y')
+    days_in_month = monthrange(selected_month_date.year, selected_month_date.month)[1]
+
+    class_qs = ClassModel.objects.filter(is_active=True).order_by('standard')
+    if report_class_id.isdigit():
+        class_qs = class_qs.filter(pk=int(report_class_id))
+
+    class_attendance_report = []
+    for cls in class_qs:
+        student_count = Student.objects.filter(
+            section__class_model=cls,
+            is_active=True
+        ).count()
+        attendance_qs = StudentAttendance.objects.filter(
+            student__section__class_model=cls,
+            date__year=selected_month_date.year,
+            date__month=selected_month_date.month
+        )
+        present_count = attendance_qs.filter(is_present=True).count()
+        total_records = attendance_qs.count()
+        average_percentage = round((present_count / total_records) * 100, 2) if total_records else 0
+        class_attendance_report.append({
+            'class_name': str(cls),
+            'student_count': student_count,
+            'present_count': present_count,
+            'total_records': total_records,
+            'average_percentage': average_percentage,
+            'expected_records': student_count * days_in_month,
+        })
+
+    teacher_qs = TeacherAttendance.objects.filter(
+        date__year=selected_month_date.year,
+        date__month=selected_month_date.month
+    )
+    teacher_present = teacher_qs.filter(is_present=True).count()
+    teacher_records = teacher_qs.count()
+    teacher_total = Teacher.objects.filter(is_active=True).count()
+    teacher_monthly_percentage = round((teacher_present / teacher_records) * 100, 2) if teacher_records else 0
+
+    return {
+        'selected_report_month': report_month,
+        'report_month_label': report_month_label,
+        'report_class_id': report_class_id,
+        'class_attendance_report': class_attendance_report,
+        'teacher_monthly_present': teacher_present,
+        'teacher_monthly_records': teacher_records,
+        'teacher_monthly_percentage': teacher_monthly_percentage,
+        'teacher_attendance_total': teacher_total,
+    }
 
 
 # =========================================================
@@ -331,6 +418,10 @@ def home_redirect(request):
 def admin_dashboard(request):
 
     context = get_dashboard_context(request)
+    context['classes'] = ClassModel.objects.filter(
+        is_active=True
+    ).order_by('standard')
+    context.update(get_monthly_attendance_report_context(request))
 
     # ---------------------------------------------------------
     # Charts Data (Chart.js)
@@ -416,9 +507,61 @@ def admin_dashboard(request):
         teacher_gender_data.append({'label': label, 'count': int(count)})
     context['teacher_gender_data'] = json.dumps(teacher_gender_data)
 
+    # Expense summary and transport details
+    expense_fuel_qs = Expense.objects.filter(category__name__icontains='fuel')
+    expense_transport_qs = Expense.objects.filter(category__name__icontains='transport')
+    expense_other_qs = Expense.objects.exclude(category__name__icontains='fuel').exclude(category__name__icontains='transport')
+
+    context['fuel_expense_total'] = expense_fuel_qs.aggregate(total=Sum('amount'))['total'] or 0
+    context['transport_expense_total'] = expense_transport_qs.aggregate(total=Sum('amount'))['total'] or 0
+    context['other_expense_total'] = expense_other_qs.aggregate(total=Sum('amount'))['total'] or 0
+    context['other_expense_records'] = expense_other_qs.order_by('-date')[:10]
+    context['recent_expense_records'] = Expense.objects.order_by('-date')[:10]
+
+    transport_buses = Bus.objects.filter(is_active=True).select_related('driver', 'teacher')
+    context['transport_bus_count'] = transport_buses.count()
+    context['transport_driver_count'] = BusDriver.objects.filter(is_active=True).count()
+    context['transport_buses'] = transport_buses.order_by('number')[:8]
+    context['transport_assignments'] = StudentTransport.objects.filter(is_active=True).select_related('student__user', 'bus__driver', 'route')[:12]
+
     # Section filter (template uses these)
     context['sections'] = Section.objects.all()
     context['selected_section'] = request.GET.get('section', '')
+
+    # Student search filter data for the dashboard template
+    student_search_query = request.GET.get('student_search_query', '').strip()
+    student_class_id = request.GET.get('student_class_id', '').strip()
+    context['student_search_query'] = student_search_query
+    context['student_class_id'] = student_class_id
+    context['student_search_results'] = []
+
+    if student_search_query or student_class_id:
+        student_filters = Q(is_active=True)
+        if student_search_query:
+            search_text = student_search_query.strip()
+            student_filters &= (
+                Q(student_id__iexact=search_text) |
+                Q(admission_number__iexact=search_text) |
+                Q(user__username__iexact=search_text) |
+                Q(user__first_name__iexact=search_text) |
+                Q(user__last_name__iexact=search_text)
+            )
+            name_parts = search_text.split()
+            if len(name_parts) >= 2:
+                first_name = name_parts[0]
+                last_name = name_parts[-1]
+                student_filters |= (
+                    Q(user__first_name__iexact=first_name) &
+                    Q(user__last_name__iexact=last_name)
+                )
+        if student_class_id and student_class_id.isdigit():
+            student_filters &= Q(section__class_model_id=int(student_class_id))
+
+        context['student_search_results'] = (
+            Student.objects.filter(student_filters)
+            .select_related('user', 'section', 'section__class_model')
+            .order_by('section__class_model__standard', 'section__name', 'roll_number')
+        )
 
     # Optional template variables referenced in admin_dashboard.html
     context.setdefault('pending_fee_students', 0)
@@ -432,6 +575,74 @@ def admin_dashboard(request):
     )
 
 
+@login_required(login_url='accounts:login')
+@role_required('super_admin', 'school_admin', 'principal')
+def expenses_panel(request):
+    """Admin expenses panel: add fuel/transport/other expenses and view history."""
+    from apps.finance.models import Expense, ExpenseCategory
+
+    if request.method == 'POST' and request.POST.get('action') == 'add_expense':
+        category_name = request.POST.get('category', 'Fuel').strip()
+        amount_text = request.POST.get('amount', '0').strip()
+        date_text = request.POST.get('date', '').strip()
+        description = request.POST.get('description', '').strip()
+        bill_attachment = request.FILES.get('bill_attachment')
+
+        if not amount_text or not date_text or not description:
+            messages.error(request, 'Please provide amount, date and description.')
+            return redirect('dashboard:admin_expenses')
+
+        try:
+            from decimal import Decimal
+            expense_date = date.fromisoformat(date_text)
+            amount_val = Decimal(amount_text)
+            category, _ = ExpenseCategory.objects.get_or_create(name=category_name)
+            voucher_number = f"EXP-{category.name[:3].upper()}-{date.today().strftime('%Y%m%d%H%M%S')}"
+            Expense.objects.create(
+                category=category,
+                amount=amount_val,
+                description=description,
+                date=expense_date,
+                voucher_number=voucher_number,
+                bill_attachment=bill_attachment,
+                paid_by=request.user,
+            )
+            messages.success(request, 'Expense recorded successfully.')
+        except Exception:
+            messages.error(request, 'Unable to save expense. Please check the form and try again.')
+
+        return redirect('dashboard:admin_expenses')
+
+    expense_type = request.GET.get('type', 'all')
+    expense_qs = Expense.objects.select_related('category', 'paid_by').exclude(category__name__icontains="transport").order_by('-date')
+    if expense_type == 'fuel':
+        expense_qs = expense_qs.filter(category__name__icontains='fuel')
+    elif expense_type == 'other':
+        expense_qs = expense_qs.exclude(category__name__icontains='fuel').exclude(category__name__icontains='transport')
+
+    today = date.today()
+    context = get_dashboard_context(request)
+    context.update({
+        'expense_history': expense_qs[:50],
+        'expense_type': expense_type,
+        'expense_categories': ['Fuel', 'Other'],
+        'today': today,
+    })
+    return render(request, 'dashboard/expenses_panel.html', context)
+
+
+@login_required(login_url='accounts:login')
+@role_required('super_admin', 'school_admin')
+def api_teacher_salary(request, teacher_id):
+    """Return basic salary info for a teacher (JSON)."""
+    from apps.teachers.models import Teacher
+    try:
+        t = Teacher.objects.select_related('user').get(pk=int(teacher_id))
+        return JsonResponse({'ok': True, 'teacher_id': t.id, 'name': t.user.get_full_name(), 'base_salary': float(t.base_salary)})
+    except Exception:
+        return JsonResponse({'ok': False}, status=404)
+
+
 # =========================================================
 # PRINCIPAL DASHBOARD
 # =========================================================
@@ -442,9 +653,107 @@ def principal_dashboard(request):
 
     # Handle "Publish" announcement coming from principal dashboard.
     if request.method == 'POST':
+        action = request.POST.get('action', '')
+
+        if action == 'add_expense':
+            category_name = request.POST.get('category', '').strip() or 'Fuel'
+            amount_text = request.POST.get('amount', '').strip()
+            expense_date_text = request.POST.get('date', '').strip()
+            description = request.POST.get('description', '').strip()
+            bill_attachment = request.FILES.get('bill_attachment')
+
+            if not amount_text or not expense_date_text or not description:
+                messages.error(request, 'Please provide category, amount, date and bill details.')
+            else:
+                try:
+                    from decimal import Decimal
+                    expense_date = date.fromisoformat(expense_date_text)
+                    amount_val = Decimal(amount_text)
+                    category, _ = ExpenseCategory.objects.get_or_create(name=category_name)
+                    voucher_number = f"EXP-{category.name[:3].upper()}-{date.today().strftime('%Y%m%d%H%M%S')}"
+                    Expense.objects.create(
+                        category=category,
+                        amount=amount_val,
+                        description=description,
+                        date=expense_date,
+                        voucher_number=voucher_number,
+                        bill_attachment=bill_attachment,
+                        paid_by=request.user,
+                    )
+                    messages.success(request, 'Expense recorded successfully.')
+                except Exception:
+                    messages.error(request, 'Failed to save expense. Check the values and try again.')
+
+            return redirect('dashboard:principal_dashboard')
+
+        if action == 'add_transport_details':
+            bus_number = request.POST.get('bus_number', '').strip()
+            driver_name = request.POST.get('driver_name', '').strip()
+            route_text = request.POST.get('route', '').strip()
+
+            if not bus_number or not driver_name or not route_text:
+                messages.error(request, 'Please provide bus number, driver name, and route for transport details.')
+            else:
+                try:
+                    # Ensure Bus exists
+                    bus, created = Bus.objects.get_or_create(
+                        number=bus_number,
+                        defaults={
+                            'capacity': 20,
+                            'model': '',
+                            'registration_date': date.today(),
+                            'is_active': True,
+                        }
+                    )
+                    if not bus.is_active:
+                        bus.is_active = True
+                        bus.save()
+
+                    # Ensure BusRoute exists for this bus
+                    route, _ = BusRoute.objects.get_or_create(
+                        bus=bus,
+                        route_name=route_text,
+                        defaults={'start_point': '', 'end_point': '', 'distance': 0, 'fare': 0}
+                    )
+
+                    # Link or create driver
+                    driver = BusDriver.objects.filter(name__iexact=driver_name).first()
+                    if driver:
+                        driver.bus = bus
+                        driver.is_active = True
+                        driver.save()
+                    else:
+                        # create a placeholder driver with generated license and expiry
+                        gen_license = f"GEN-{date.today().strftime('%Y%m%d%H%M%S')}"
+                        license_expiry = date.today() + timedelta(days=365)
+                        driver = BusDriver.objects.create(
+                            name=driver_name,
+                            phone='',
+                            license_number=gen_license,
+                            license_expiry=license_expiry,
+                            bus=bus,
+                            is_active=True
+                        )
+
+                    messages.success(request, 'Transport models created/updated successfully.')
+                    # Redirect to principal transport list and show created items
+                    params = {
+                        'created_bus': bus.id,
+                        'created_driver': driver.id if driver else '',
+                        'created_route': route.id if route else ''
+                    }
+                    url = reverse('#') + '?' + urllib.parse.urlencode(params)
+                    return redirect(url)
+                except Exception:
+                    messages.error(request, 'Unable to save transport details into transport models. Please try again.')
+
+            return redirect('dashboard:principal_dashboard')
+
         title = request.POST.get('title', '').strip()
         priority = request.POST.get('priority', 'medium').strip()
         content = request.POST.get('content', '').strip()
+        section_name = request.POST.get('section_name', '').strip()
+        class_id = request.POST.get('class_id', '').strip()
 
         if title and content:
             Notice.objects.create(
@@ -454,11 +763,93 @@ def principal_dashboard(request):
                 created_by=request.user,
                 is_active=True,
             )
+            messages.success(request, 'Announcement published successfully.')
 
-        # Redirect to avoid resubmission and to refresh notices for teacher dashboard.
+        if section_name and class_id and class_id.isdigit():
+            class_obj = ClassModel.objects.filter(pk=class_id, is_active=True).first()
+            if class_obj:
+                section, created = Section.objects.get_or_create(
+                    class_model=class_obj,
+                    name=section_name,
+                    defaults={'is_active': True}
+                )
+                if created:
+                    messages.success(request, f'Section "{section_name}" added to {class_obj}.')
+                else:
+                    messages.info(request, f'Section "{section_name}" already exists for {class_obj}.')
+            else:
+                messages.error(request, 'Please select a valid class to add a section.')
+
         return redirect('dashboard:principal_dashboard')
 
     context = get_dashboard_context(request)
+
+    context['classes'] = ClassModel.objects.filter(
+        is_active=True
+    ).order_by('standard')
+    context.update(get_monthly_attendance_report_context(request))
+
+    # Student search filter for dashboard cards
+    student_search_query = request.GET.get('student_search_query', '').strip()
+    student_class_id = request.GET.get('student_class_id', '').strip()
+    context['student_search_query'] = student_search_query
+    context['student_class_id'] = student_class_id
+    context['student_search_results'] = []
+
+    if student_search_query or student_class_id:
+        student_filters = Q(is_active=True)
+        if student_search_query:
+            search_text = student_search_query.strip()
+            student_filters &= (
+                Q(student_id__iexact=search_text) |
+                Q(admission_number__iexact=search_text) |
+                Q(user__username__iexact=search_text) |
+                Q(user__first_name__iexact=search_text) |
+                Q(user__last_name__iexact=search_text)
+            )
+            # Support full name matching when the user enters both parts.
+            name_parts = search_text.split()
+            if len(name_parts) >= 2:
+                first_name = name_parts[0]
+                last_name = name_parts[-1]
+                student_filters |= (
+                    Q(user__first_name__iexact=first_name) &
+                    Q(user__last_name__iexact=last_name)
+                )
+        if student_class_id and student_class_id.isdigit():
+            student_filters &= Q(section__class_model_id=int(student_class_id))
+
+        context['student_search_results'] = (
+            Student.objects.filter(student_filters)
+            .select_related('user', 'section', 'section__class_model')
+            .order_by('section__class_model__standard', 'section__name', 'roll_number')
+        )
+
+    student_fee_query = request.GET.get('student_fee_query', '').strip()
+    context['student_fee_query'] = student_fee_query
+    context['fee_search_results'] = []
+
+    if student_fee_query:
+        search_query = (
+            Q(student__student_id__icontains=student_fee_query) |
+            Q(student__admission_number__icontains=student_fee_query) |
+            Q(student__user__first_name__icontains=student_fee_query) |
+            Q(student__user__last_name__icontains=student_fee_query) |
+            Q(student__user__username__icontains=student_fee_query) |
+            Q(student__user__email__icontains=student_fee_query)
+        )
+
+        context['fee_search_results'] = (
+            FeeCollection.objects.select_related(
+                'student',
+                'student__user',
+                'student__section',
+                'student__section__class_model',
+                'fee_structure'
+            )
+            .filter(search_query)
+            .order_by('-month')
+        )
 
     recent_marks = StudentMarks.objects.select_related(
         'student',
@@ -476,13 +867,15 @@ def principal_dashboard(request):
 
     context['pending_leave_count'] = pending_leaves.count()
 
+    context['expense_categories'] = ExpenseCategory.objects.all().order_by('name')
+    context['today'] = date.today()
+    context['recent_expenses'] = Expense.objects.order_by('-date')[:10]
+
     return render(
         request,
         'dashboard/principal_dashboard.html',
         context
     )
-
-
 # =========================================================
 # TEACHER DASHBOARD
 # =========================================================
@@ -893,3 +1286,27 @@ def dashboard_data(request):
         data['role'] = 'unknown'
 
     return JsonResponse(data)
+def bus_students(request, bus_id):
+    bus = Bus.objects.select_related(
+        'driver',
+        'teacher'
+    ).get(id=bus_id)
+
+    students = StudentTransport.objects.filter(
+        bus=bus,
+        is_active=True
+    ).select_related(
+        'student__user',
+        'student__section'
+    )
+
+    context = {
+        'bus': bus,
+        'students': students
+    }
+
+    return render(
+        request,
+        'dashboard/bus_students.html',
+        context
+    )

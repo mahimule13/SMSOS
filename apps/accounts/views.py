@@ -5,7 +5,7 @@ from django.contrib.auth.models import User  # type: ignore[import]
 from django.contrib import messages  # type: ignore[import]
 from django.utils import timezone  # type: ignore[import]
 # optional imports removed if unused
-from apps.accounts.ivr_service import make_call, ParentContact, trigger_twilio_ivr_calls
+from apps.accounts.ivr_service import make_call, ParentContact, trigger_twilio_ivr_calls, _to_e164_or_none
 
 from .models import UserProfile, PasswordReset, AuditLog
 
@@ -781,6 +781,12 @@ def _mark_numbers_called(request, numbers: set[str]):
     _save_session_called_numbers(request, called)
 
 
+def _normalize_phone_for_session(phone):
+    if not phone:
+        return None
+    return _to_e164_or_none(str(phone).strip())
+
+
 def _get_teacher_fee_rows_for_call():
     # Placeholder to keep code organized; data comes from DB models directly
     return None
@@ -813,14 +819,11 @@ def call_parent_for_fee_student(request):
     mother_phone = getattr(student, 'mother_phone', '')
 
     contacts: list[ParentContact] = []
-    phone_numbers_to_call: set[str] = set()
 
     for phone, name in [(father_phone, getattr(student, 'father_name', 'Father')), (mother_phone, getattr(student, 'mother_name', 'Mother'))]:
-        if phone:
-            p = str(phone).strip()
-            if p:
-                phone_numbers_to_call.add(p)
-                contacts.append(ParentContact(phone=p, name=name))
+        normalized = _normalize_phone_for_session(phone)
+        if normalized:
+            contacts.append(ParentContact(phone=normalized, name=name))
 
     called_numbers = _get_session_called_numbers(request)
 
@@ -839,6 +842,7 @@ def call_parent_for_fee_student(request):
     attempted = 0
     success = 0
     failed = 0
+    failed_reasons = []
 
     if to_trigger_contacts:
         # trigger_twilio_ivr_calls returns per-number results but already normalizes/dedupes.
@@ -854,12 +858,19 @@ def call_parent_for_fee_student(request):
                 'attempted': 0,
                 'success': 0,
                 'failed': 0,
+                'failed_reasons': [],
             }, status=500)
 
         attempted = trigger_out.get('attempted') or 0
         results = trigger_out.get('results') or []
         success = trigger_out.get('successful_calls') or 0
         failed = max(attempted - success, 0)
+
+        for r in results:
+            if r and r.get('status') == 'FAILED':
+                fr = r.get('failure_reason') or r.get('twilio_error_message') or r.get('error')
+                if fr:
+                    failed_reasons.append(fr)
 
         # Mark successful calls as called based on returned phone list.
         # NOTE: trigger_twilio_ivr_calls() normalizes phones to E.164 before calling,
@@ -875,9 +886,10 @@ def call_parent_for_fee_student(request):
         'fee_collection_id': int(fee_collection_id),
         'already_called': already_called,
         'results': results,
-'attempted': attempted,
+        'attempted': attempted,
         'success': success,
         'failed': failed,
+        'failed_reasons': sorted(list(set(failed_reasons))),
     }
     return JsonResponse(response)
 
@@ -906,14 +918,13 @@ def call_all_pending_fee_parents(request):
         father_phone = getattr(student, 'father_phone', '')
         mother_phone = getattr(student, 'mother_phone', '')
 
-        if father_phone:
-            p = str(father_phone).strip()
-            if p:
-                contacts.append(ParentContact(phone=p, name=getattr(student, 'father_name', 'Father')))
-        if mother_phone:
-            p = str(mother_phone).strip()
-            if p:
-                contacts.append(ParentContact(phone=p, name=getattr(student, 'mother_name', 'Mother')))
+        normalized_father = _normalize_phone_for_session(father_phone)
+        if normalized_father:
+            contacts.append(ParentContact(phone=normalized_father, name=getattr(student, 'father_name', 'Father')))
+
+        normalized_mother = _normalize_phone_for_session(mother_phone)
+        if normalized_mother:
+            contacts.append(ParentContact(phone=normalized_mother, name=getattr(student, 'mother_name', 'Mother')))
 
     # Decide already-called vs to_trigger.
     to_trigger: list[ParentContact] = []
@@ -930,6 +941,7 @@ def call_all_pending_fee_parents(request):
     attempted = 0
     success = 0
     failed = 0
+    failed_reasons = []
 
     if to_trigger:
         try:
@@ -943,6 +955,7 @@ def call_all_pending_fee_parents(request):
                 'attempted': 0,
                 'success': 0,
                 'failed': 0,
+                'failed_reasons': [],
             }, status=500)
 
         attempted = trigger_out.get('attempted') or 0
@@ -950,7 +963,6 @@ def call_all_pending_fee_parents(request):
         success = trigger_out.get('successful_calls') or 0
         failed = max(attempted - success, 0)
 
-        failed_reasons = []
         for r in results:
             if r and r.get('status') == 'FAILED':
                 fr = r.get('failure_reason') or r.get('twilio_error_message') or r.get('error')
@@ -966,10 +978,9 @@ def call_all_pending_fee_parents(request):
         'ok': True,
         'already_called': sorted(list(already_called_set)),
         'attempted': attempted,
-'success': success,
+        'success': success,
         'failed': failed,
         'results': results,
-
         'failed_reasons': sorted(list(set(failed_reasons))),
     }
     return JsonResponse(response)

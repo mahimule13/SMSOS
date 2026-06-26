@@ -1,0 +1,221 @@
+{% extends "base/layout.html" %}
+
+{% block title %}Add Transport{% endblock %}
+
+{% block content %}
+
+<div class="container-fluid">
+
+    <div class="card shadow">
+
+        <div class="card-header bg-primary text-white">
+            <h4 class="mb-0">Add Transport Details</h4>
+        </div>
+
+        <div class="card-body">
+
+            <form method="POST">
+                {% csrf_token %}
+
+                <!-- BUS DETAILS -->
+
+                <h5 class="mb-3">Bus Details</h5>
+
+                <div class="row">
+
+                    <div class="col-md-4 mb-3">
+                        <label class="form-label">Bus Number</label>
+                        <input type="text"
+                               name="bus_number"
+                               class="form-control"
+                               required>
+                    </div>
+
+                    <div class="col-md-4 mb-3">
+                        <label class="form-label">Capacity</label>
+                        <input type="number"
+                               name="capacity"
+                               class="form-control"
+                               required>
+                    </div>
+
+                    <div class="col-md-4 mb-3">
+                        <label class="form-label">Model</label>
+                        <input type="text"
+                               name="model"
+                               class="form-control">
+                    </div>
+
+                </div>
+
+                <div class="mb-4">
+                    <label class="form-label">
+                        Teacher Incharge
+                    </label>
+
+                    <select name="teacher"
+                            class="form-select">
+
+                        <option value="">
+                            Select Teacher
+                        </option>
+
+                        {% for teacher in teachers %}
+                        <option value="{{ teacher.id }}">
+                            {{ teacher.user.get_full_name }}
+                        </option>
+                        {% endfor %}
+
+                    </select>
+                </div>
+
+                <hr>
+
+                <!-- DRIVER DETAILS -->
+
+                <h5 class="mb-3">Driver Details</h5>
+
+                <div class="row">
+
+                    <div class="col-md-6 mb-3">
+                        <label class="form-label">
+                            Driver Name
+                        </label>
+
+                        <input type="text"
+                               name="driver_name"
+                               class="form-control"
+                               required>
+                    </div>
+
+                    <div class="col-md-6 mb-3">
+                        <label class="form-label">
+                            Phone Number
+                        </label>
+
+                        <input type="text"
+                               name="driver_phone"
+                               class="form-control"
+                               required>
+                    </div>
+
+                </div>
+
+                <div class="row">
+
+                    <div class="col-md-6 mb-3">
+                        <label class="form-label">
+                            License Number
+                        </label>
+
+                        <input type="text"
+                               name="license_number"
+                               class="form-control">
+                    </div>
+
+                    <div class="col-md-6 mb-3">
+                        <label class="form-label">
+                            License Expiry Date
+                        </label>
+
+                        <input type="date"
+                               name="license_expiry"
+                               class="form-control">
+                    </div>
+
+                </div>
+
+                <hr>
+
+                <!-- ROUTE DETAILS -->
+
+                <h5 class="mb-3">Route Details</h5>
+
+                <div class="row">
+
+                    <div class="col-md-4 mb-3">
+                        <label class="form-label">
+                            Route Name
+                        </label>
+
+                        <input type="text"
+                               name="route_name"
+                               class="form-control"
+                               required>
+                    </div>
+
+                    <div class="col-md-4 mb-3">
+                        <label class="form-label">
+                            Start Point
+                        </label>
+
+                        <input type="text"
+                               name="start_point"
+                               class="form-control"
+                               required>
+                    </div>
+
+                    <div class="col-md-4 mb-3">
+                        <label class="form-label">
+                            End Point
+                        </label>
+
+                        <input type="text"
+                               name="end_point"
+                               class="form-control"
+                               required>
+                    </div>
+
+                </div>
+
+                <div class="row">
+
+                    <div class="col-md-4 mb-3">
+                        <label class="form-label">
+                            Distance (KM)
+                        </label>
+
+                        <input type="number"
+                               step="0.01"
+                               name="distance"
+                               class="form-control"
+                               value="0">
+                    </div>
+
+                    <div class="col-md-4 mb-3">
+                        <label class="form-label">
+                            Fare
+                        </label>
+
+                        <input type="number"
+                               step="0.01"
+                               name="fare"
+                               class="form-control"
+                               value="0">
+                    </div>
+
+                </div>
+
+                <div class="mt-4">
+
+                    <button type="submit"
+                            class="btn btn-success">
+                        Save Transport Details
+                    </button>
+
+                    <a href="{% url 'transport:management' %}"
+                       class="btn btn-secondary">
+                        Cancel
+                    </a>
+
+                </div>
+
+            </form>
+
+        </div>
+
+    </div>
+
+</div>
+
+{% endblock %}

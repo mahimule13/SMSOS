@@ -192,6 +192,22 @@
     </div>
     {% endif %}
 
+    <!-- Report Card Menu -->
+    <div class="row mt-4">
+        <div class="col-md-12">
+            <div class="card">
+                <div class="card-header">
+                    <i class="fas fa-file-alt"></i> Report Card
+                </div>
+                <div class="card-body text-center">
+                    <a href="{% url 'exams:reportcard' student.id %}" class="btn btn-success btn-lg w-100">
+                        <i class="fas fa-print"></i> View & Download Report Card PDFs
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+
     <!-- Recent Marks + Timetables -->
 
     <div class="row mt-4">
@@ -225,37 +241,9 @@
                 </table>
             </div>
         </div>
-
-        <div class="col-md-6">
-            <div class="card">
-                <div class="card-header">
-                    <i class="fas fa-calendar"></i> Class Timetable
-                </div>
-                <table class="table table-sm">
-                    <thead>
-                        <tr>
-                            <th>Day</th>
-                            <th>Subject</th>
-                            <th>Time</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        {% for class in timetable %}
-                        <tr>
-                            <td>{{ class.get_day_display }}</td>
-                            <td>{{ class.subject.name }}</td>
-                            <td>{{ class.start_time|time:"H:i" }}</td>
-                        </tr>
-                        {% empty %}
-                        <tr>
-                            <td colspan="3" class="text-center text-muted">No classes scheduled</td>
-                        </tr>
-                        {% endfor %}
-                    </tbody>
-                </table>
-            </div>
         </div>
     </div>
+
 
     <!-- Exam Timetable (filtered by student's section) -->
     <div class="row mt-4">

@@ -1,0 +1,92 @@
+{% extends "base/layout.html" %}
+
+{% block title %}Allocate Transport{% endblock %}
+
+{% block content %}
+
+<div class="container-fluid">
+
+    <div class="card">
+
+        <div class="card-header">
+            <h4>Allocate Transport To Student</h4>
+        </div>
+
+        <div class="card-body">
+
+            <form method="post">
+                {% csrf_token %}
+
+                <div class="mb-3">
+                    <label class="form-label">
+                        Student
+                    </label>
+
+                    <select name="student_id" class="form-control" required>
+                        <option value="">
+                            Select Student
+                        </option>
+
+                        {% for student in students %}
+                        <option value="{{ student.id }}">
+                            {{ student.user.get_full_name }}
+                        </option>
+                        {% endfor %}
+                    </select>
+                </div>
+
+                <div class="mb-3">
+                    <label class="form-label">
+                        Bus
+                    </label>
+
+                    <select name="bus_id" class="form-control" required>
+                        <option value="">
+                            Select Bus
+                        </option>
+
+                        {% for bus in buses %}
+                        <option value="{{ bus.id }}">
+                            {{ bus.number }}
+                        </option>
+                        {% endfor %}
+                    </select>
+                </div>
+
+                <div class="mb-3">
+                    <label class="form-label">
+                        Route
+                    </label>
+
+                    <select name="route_id" class="form-control" required>
+                        <option value="">
+                            Select Route
+                        </option>
+
+                        {% for route in routes %}
+                        <option value="{{ route.id }}">
+                            {{ route.route_name }}
+                        </option>
+                        {% endfor %}
+                    </select>
+                </div>
+
+                <button type="submit"
+                        class="btn btn-success">
+                    Allocate Transport
+                </button>
+
+                <a href="{% url 'transport:management' %}"
+                   class="btn btn-secondary">
+                    Back
+                </a>
+
+            </form>
+
+        </div>
+
+    </div>
+
+</div>
+
+{% endblock %}

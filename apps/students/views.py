@@ -1,14 +1,17 @@
-from datetime import date
+from datetime import date, timedelta
+import calendar as _calendar
 
 from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib.auth.decorators import login_required
 from django.contrib.auth.models import User
 from django.contrib import messages
+from django.db.models import Q
 from apps.accounts.decorators import admin_required, role_required
 from apps.accounts.models import UserProfile
 from .models import Student, StudentAttendance
 from apps.classes.models import Section, ClassModel
 from apps.fees.models import FeeStructure, FeeCollection
+from apps.exams.models import StudentMarks, ReportCard
 import uuid
 
 
@@ -16,13 +19,33 @@ import uuid
 @role_required('super_admin', 'school_admin', 'principal')
 def student_list(request):
     section_id = request.GET.get('section')
-    students = Student.objects.all()
-    
+    search_query = request.GET.get('search', '').strip()
+
+    students = Student.objects.select_related('user', 'section', 'section__class_model').filter(is_active=True)
+
     if section_id:
         students = students.filter(section_id=section_id)
-    
+
+    if search_query:
+        query = search_query.strip()
+        students = students.filter(
+            Q(student_id__iexact=query) |
+            Q(admission_number__iexact=query) |
+            Q(user__username__iexact=query) |
+            Q(user__email__iexact=query) |
+            Q(user__first_name__iexact=query) |
+            Q(user__last_name__iexact=query) |
+            Q(user__first_name__icontains=query) |
+            Q(user__last_name__icontains=query)
+        )
+
     sections = Section.objects.all()
-    context = {'students': students, 'sections': sections}
+    context = {
+        'students': students,
+        'sections': sections,
+        'selected_section': section_id,
+        'search_query': search_query,
+    }
     return render(request, 'students/list.html', context)
 
 
@@ -129,10 +152,110 @@ def create_student(request):
     return render(request, 'students/create.html', context)
 
 
+def build_attendance_calendar(student, month_str=None):
+    """
+    Build a calendar grid showing attendance for the given student for a selected month.
+    month_str format: 'YYYY-MM' or None for current month.
+    """
+    try:
+        if month_str:
+            year, month = [int(x) for x in month_str.split('-')]
+            selected_month_date = date(year, month, 1)
+        else:
+            selected_month_date = date.today().replace(day=1)
+    except Exception:
+        selected_month_date = date.today().replace(day=1)
+
+    first_day = selected_month_date
+    last_day_num = _calendar.monthrange(first_day.year, first_day.month)[1]
+    last_day = date(first_day.year, first_day.month, last_day_num)
+
+    # Placeholder holidays (no holiday model)
+    holidays_set = set()
+
+    # Pull attendance for the month
+    attendance_qs = StudentAttendance.objects.filter(
+        student=student,
+        date__gte=first_day,
+        date__lte=last_day,
+    ).only('date', 'is_present', 'remarks')
+
+    attendance_by_date = {}
+    for a in attendance_qs:
+        status = 'absent'
+        if a.is_present:
+            if a.remarks and ('half' in a.remarks.lower()):
+                status = 'half'
+            else:
+                status = 'present'
+        else:
+            if a.remarks and ('half' in a.remarks.lower()):
+                status = 'half'
+        attendance_by_date[a.date] = status
+
+    # Build calendar grid starting on Monday
+    start_weekday = first_day.weekday()  # Monday=0
+    grid_start = first_day - timedelta(days=start_weekday)
+    weeks = []
+    current_day = grid_start
+
+    for _ in range(6):
+        week = []
+        for _ in range(7):
+            day_obj = current_day
+            status = None
+            is_holiday = day_obj in holidays_set
+            in_month = (day_obj.month == first_day.month)
+
+            if is_holiday:
+                status = 'holiday'
+            elif in_month and day_obj in attendance_by_date:
+                status = attendance_by_date[day_obj]
+
+            week.append({
+                'date': day_obj,
+                'day': day_obj.day,
+                'in_month': in_month,
+                'status': status,
+            })
+
+            current_day += timedelta(days=1)
+        weeks.append(week)
+
+    return {
+        'year': first_day.year,
+        'month': first_day.month,
+        'month_label': first_day.strftime('%B %Y'),
+        'weeks': weeks,
+        'prev_month': (first_day.replace(day=1) - timedelta(days=1)).strftime('%Y-%m'),
+        'next_month': ((first_day.replace(day=1) + timedelta(days=32)).replace(day=1)).strftime('%Y-%m'),
+        'holidays_enabled': False,
+    }
+
+
 @login_required(login_url='login')
 def student_detail(request, pk):
     student = get_object_or_404(Student, pk=pk)
-    context = {'student': student}
+    today = date.today()
+
+    marks = StudentMarks.objects.filter(
+        student=student
+    ).select_related('exam', 'subject').order_by('-exam__start_date', 'subject__name')
+
+    report_cards = ReportCard.objects.filter(
+        student=student
+    ).order_by('-exam__start_date')
+
+    # Attendance calendar
+    month_param = request.GET.get('month')
+    attendance_calendar = build_attendance_calendar(student, month_param)
+
+    context = {
+        'student': student,
+        'marks': marks,
+        'report_cards': report_cards,
+        'attendance_calendar': attendance_calendar,
+    }
     return render(request, 'students/detail.html', context)
 
 

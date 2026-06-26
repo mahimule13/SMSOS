@@ -16,7 +16,5 @@ urlpatterns = [
     path('teacher/marks/', views.teacher_mark_entry, name='teacher_mark_entry'),
 
     path('reportcard/<int:student_id>/', views.student_reportcard, name='reportcard'),
+    path('reportcard/<int:student_id>/<int:exam_id>/download/pdf/', views.reportcard_download_pdf, name='reportcard_download_pdf'),
 ]
-
-
-

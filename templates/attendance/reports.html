@@ -1,21 +1,556 @@
 {% extends "base/layout.html" %}
 
-{% block title %}Attendance Reports - SMS{% endblock %}
-{% block page_title %}Attendance Reports{% endblock %}
+{% block title %}Attendance Reports{% endblock %}
+{% block page_title %}Attendance Analytics{% endblock %}
 
 {% block content %}
+
 <div class="container-fluid">
-    <div class="row">
-        <div class="col-md-12">
-            <div class="card">
-                <div class="card-header">
-                    <h4>Attendance Reports</h4>
+
+    <!-- Filter + Export -->
+<!-- Student Attendance Search -->
+<div class="card mb-4">
+    <div class="card-header">
+        <h5>Student Attendance Search</h5>
+    </div>
+
+    <div class="card-body">
+        <form method="GET">
+
+            <div class="row">
+
+                <div class="col-md-3">
+                    <label>Student ID</label>
+                    <input
+                        type="text"
+                        name="student_id"
+                        class="form-control"
+                        value="{{ request.GET.student_id }}"
+                        placeholder="Enter Student ID">
                 </div>
+
+                <div class="col-md-3">
+                    <label>Class</label>
+
+                    <select name="section" class="form-control">
+                        <option value="">All Classes</option>
+
+                        {% for section in sections %}
+                        <option
+                            value="{{ section.id }}"
+                            {% if request.GET.section == section.id|stringformat:"s" %}
+                            selected
+                            {% endif %}
+                        >
+                            Class {{ section.class_model.standard }} - {{ section.name }}
+                        </option>
+                        {% endfor %}
+
+                    </select>
+                </div>
+
+                <div class="col-md-2">
+                    <label>From Date</label>
+                    <input
+                        type="date"
+                        name="from_date"
+                        class="form-control"
+                        value="{{ request.GET.from_date }}">
+                </div>
+
+                <div class="col-md-2">
+                    <label>To Date</label>
+                    <input
+                        type="date"
+                        name="to_date"
+                        class="form-control"
+                        value="{{ request.GET.to_date }}">
+                </div>
+                <div class="col-md-3 d-flex align-items-end">
+
+    <button type="submit" class="btn btn-primary me-2">
+        Search
+    </button>
+
+    <a href="{% url 'attendance:export_excel' %}"
+       class="btn btn-success me-2">
+        Export Excel
+    </a>
+
+    <a href="{% url 'attendance:export_pdf' %}"
+       class="btn btn-danger me-2">
+        Export PDF
+    </a>
+
+</div>
+
+            </div>
+        </form>
+    </div>
+</div>
+    <!-- Summary Cards -->
+
+    <div class="row">
+
+        <div class="col-md-3">
+            <div class="card text-center border-success">
                 <div class="card-body">
-                    <p>Attendance reports will appear here.</p>
+                    <h3>{{ teacher_present }}</h3>
+                    <p>Teachers Present</p>
                 </div>
             </div>
         </div>
+
+        <div class="col-md-3">
+            <div class="card text-center border-danger">
+                <div class="card-body">
+                    <h3>{{ teacher_absent }}</h3>
+                    <p>Teachers Absent</p>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-3">
+            <div class="card text-center border-success">
+                <div class="card-body">
+                    <h3>{{ student_present }}</h3>
+                    <p>Students Present</p>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-3">
+            <div class="card text-center border-danger">
+                <div class="card-body">
+                    <h3>{{ student_absent }}</h3>
+                    <p>Students Absent</p>
+                </div>
+            </div>
+        </div>
+
+    </div>
+
+    <!-- Percentage Cards -->
+
+    <div class="row mt-3">
+
+        <div class="col-md-6">
+            <div class="card text-center">
+                <div class="card-body">
+
+                    <h2>{{ teacher_percentage }}%</h2>
+                    <p>Teacher Attendance</p>
+
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-6">
+            <div class="card text-center">
+                <div class="card-body">
+
+                    <h2>{{ student_percentage }}%</h2>
+                    <p>Student Attendance</p>
+
+                </div>
+            </div>
+        </div>
+
+    </div>
+
+    <!-- Weekly Summary -->
+
+    <div class="card mt-4">
+
+        <div class="card-header">
+            Weekly Attendance Summary
+        </div>
+
+        <div class="card-body">
+
+            <div class="row">
+
+                <div class="col-md-6">
+                    <h5>Teachers</h5>
+                    <h3>{{ weekly_teacher }}</h3>
+                </div>
+
+                <div class="col-md-6">
+                    <h5>Students</h5>
+                    <h3>{{ weekly_student }}</h3>
+                </div>
+
+            </div>
+
+        </div>
+
+    </div>
+
+    <!-- Monthly Summary -->
+
+    <div class="card mt-4">
+
+        <div class="card-header">
+            Monthly Attendance Summary
+        </div>
+
+        <div class="card-body">
+
+            <div class="row">
+
+                <div class="col-md-6">
+                    <h5>Teachers</h5>
+                    <h3>{{ monthly_teacher }}</h3>
+                </div>
+
+                <div class="col-md-6">
+                    <h5>Students</h5>
+                    <h3>{{ monthly_student }}</h3>
+                </div>
+
+            </div>
+
+        </div>
+
+    </div>
+
+ <div class="card mb-4">
+    <div class="card-header">
+        <h5>Student Attendance Report</h5>
+    </div>
+
+    <div class="card-body">
+
+        <div class="row text-center">
+
+            <div class="col-md-3">
+                <h3>{{ student_total }}</h3>
+                <p>Total Records</p>
+            </div>
+
+            <div class="col-md-3">
+                <h3 class="text-success">
+                    {{ student_present_report }}
+                </h3>
+                <p>Present</p>
+            </div>
+
+            <div class="col-md-3">
+                <h3 class="text-danger">
+                    {{ student_absent_report }}
+                </h3>
+                <p>Absent</p>
+            </div>
+
+            <div class="col-md-3">
+                <h3 class="text-primary">
+                    {{ student_percentage_report }}%
+                </h3>
+                <p>Attendance %</p>
+            </div>
+
+        </div>
+
     </div>
 </div>
+
+    <!-- Teacher Attendance -->
+    <div class="card mt-4">
+
+    <div class="card-header">
+        <h4>Teacher Attendance Analytics</h4>
+    </div>
+
+    <div class="card-body">
+        <div style="width: 100%; height: 400px;">
+            <canvas id="teacherChart"></canvas>
+        </div>
+    </div>
+   </div>
+    <div class="card mt-4">
+
+        <div class="card-header">
+            Teacher Attendance Records
+        </div>
+
+        <div class="card-body">
+
+            <table class="table table-striped">
+
+                <thead>
+                    <tr>
+                        <th>Teacher</th>
+                        <th>Date</th>
+                        <th>Status</th>
+                    </tr>
+                </thead>
+
+                <tbody>
+
+                    {% for attendance in teacher_records %}
+
+                    <tr>
+
+                        <td>
+                            {{ attendance.teacher.user.get_full_name }}
+                        </td>
+
+                        <td>
+                            {{ attendance.date }}
+                        </td>
+                        <td>
+
+                            {% if attendance.is_present %}
+                                <span class="badge bg-success">
+                                    Present
+                                </span>
+                            {% else %}
+                                <span class="badge bg-danger">
+                                    Absent
+                                </span>
+                            {% endif %}
+
+                        </td>
+
+                    </tr>
+
+                    {% endfor %}
+
+                </tbody>
+
+            </table>
+
+        </div>
+
+    </div>    
+<div class="card mt-4">
+    <div class="card-header">
+        Student Wise Attendance Report
+    </div>
+
+    <div class="card-body">
+
+        <form method="GET">
+
+            <div class="row">
+
+                <div class="col-md-3">
+                    <label>Student ID</label>
+                    <input
+                        type="text"
+                        name="student_id"
+                        value="{{ student_id }}"
+                        class="form-control">
+                </div>
+
+                <div class="col-md-3">
+                    <label>Class / Section</label>
+
+                    <select name="section" class="form-select">
+
+                        <option value="">
+                            All Classes
+                        </option>
+
+                        {% for section in sections %}
+                        <option value="{{ section.id }}">
+                            Class {{ section.class_model.standard }}
+                            - {{ section.name }}
+                        </option>
+                        {% endfor %}
+
+                    </select>
+
+                </div>
+
+                <div class="col-md-2">
+                    <label>From Date</label>
+                    <input
+                        type="date"
+                        name="from_date"
+                        value="{{ from_date }}"
+                        class="form-control">
+                </div>
+
+                <div class="col-md-2">
+                    <label>To Date</label>
+                    <input
+                        type="date"
+                        name="to_date"
+                        value="{{ to_date }}"
+                        class="form-control">
+                </div>
+
+                <div class="col-md-2">
+                    <label>&nbsp;</label>
+                    <button class="btn btn-primary w-100">
+                        Search
+                    </button>
+                </div>
+
+            </div>
+
+        </form>
+
+    </div>
+</div>
+    <div class="card mt-4">
+    <div class="card-header">
+        <h4>Student Attendance Analytics</h4>
+    </div>
+
+    <div class="card-body">
+        <div style="width: 100%; height: 400px;">
+            <canvas id="studentChart"></canvas>
+        </div>
+    </div>
+
+    <!-- Student Attendance -->
+
+    <div class="card mt-4">
+
+        <div class="card-header">
+            Student Attendance Records
+        </div>
+        <div class="card-body">
+
+            <table class="table table-striped">
+
+                <thead>
+                    <tr>
+                        <th>Student</th>
+                        <th>Date</th>
+                        <th>class </th>
+                        <th>Status</th>
+                    </tr>
+                </thead>
+
+                <tbody>
+
+                    {% for attendance in student_records %}
+
+                    <tr>
+
+                        <td>
+                            {{ attendance.student.user.get_full_name }}
+                        </td>
+
+                        <td>
+                            {{ attendance.date }}
+                        </td>
+                        <td>
+                           class {{ attendance.student.section.class_model.standard }} 
+                        </td>
+                        <td>
+
+                            {% if attendance.is_present %}
+                                <span class="badge bg-success">
+                                    Present
+                                </span>
+                            {% else %}
+                                <span class="badge bg-danger">
+                                    Absent
+                                </span>
+                            {% endif %}
+
+                        </td>
+
+                    </tr>
+
+                    {% endfor %}
+
+                </tbody>
+
+            </table>
+
+        </div>
+
+    </div>
+</div>
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script>
+const studentCtx =
+document.getElementById('studentChart');
+
+new Chart(studentCtx, {
+
+    type: 'line',
+
+    data: {
+
+        labels: {{ student_labels|safe }},
+
+        datasets: [
+
+            {
+                label: 'Daily Students',
+                data: {{ student_daily_data|safe }},
+                borderColor: 'green',
+                fill: false
+            },
+
+            {
+                label: 'Weekly Students',
+                data: {{ student_weekly_data|safe }},
+                borderColor: 'blue',
+                fill: false
+            },
+
+            {
+                label: 'Monthly Students',
+                data: {{ student_monthly_data|safe }},
+                borderColor: 'red',
+                fill: false
+            }
+
+        ]
+    },
+    options:{
+        responsive:true,
+        maintainAspectRatio:false
+    }
+});
+const teacherCtx =
+document.getElementById('teacherChart');
+
+new Chart(teacherCtx, {
+
+    type: 'line',
+
+    data: {
+
+        labels: {{ teacher_labels|safe }},
+
+        datasets: [
+
+            {
+                label: 'Daily Teachers',
+                data: {{ teacher_daily_data|safe }},
+                borderColor: 'green',
+                fill: false
+            },
+
+            {
+                label: 'Weekly Teachers',
+                data: {{ teacher_weekly_data|safe }},
+                borderColor: 'blue',
+                fill: false
+            },
+
+            {
+                label: 'Monthly Teachers',
+                data: {{ teacher_monthly_data|safe }},
+                borderColor: 'red',
+                fill: false
+            }
+
+        ]
+    },
+    options:{
+        responsive:true,
+        maintainAspectRatio:false
+    }
+});
+</script>
+
 {% endblock %}

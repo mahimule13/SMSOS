@@ -11,4 +11,9 @@ urlpatterns = [
     path('<int:pk>/delete/', views.delete_teacher, name='delete'),
     path('attendance/', views.teacher_attendance, name='attendance'),
     path('leave-requests/', views.leave_requests, name='leave_requests'),
+    path(
+    "apply-leave/",
+    views.apply_leave,
+    name="apply_leave"
+),
 ]

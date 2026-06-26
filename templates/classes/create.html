@@ -16,12 +16,13 @@
     <form method="post">
         {% csrf_token %}
         <div class="mb-3">
-            <label class="form-label">Standard</label>
+            <label class="form-label">Class Standard</label>
             <input type="text" name="standard" class="form-control" required>
         </div>
         <div class="mb-3">
-            <label class="form-label">Name</label>
-            <input type="text" name="name" class="form-control" required>
+            <label class="form-label">Sections</label>
+            <textarea name="sections" class="form-control" rows="3" placeholder="Enter section names separated by commas or new lines (e.g. A, B, C)"></textarea>
+            <small class="form-text text-muted">Optional: add sections while creating the class.</small>
         </div>
         <button type="submit" class="btn btn-primary">Create</button>
         <a href="{% url 'classes:list' %}" class="btn btn-secondary">Cancel</a>

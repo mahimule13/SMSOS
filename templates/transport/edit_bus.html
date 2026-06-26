@@ -1,0 +1,222 @@
+{% extends "base/layout.html" %}
+{% block title %}Edit Transport{% endblock %}
+{% block content %}
+<div class="container-fluid">
+    <div class="card">
+        <div class="card-header bg-primary text-white">
+            <h4 class="mb-0">
+                Edit Transport Details
+            </h4>
+        </div>
+        <div class="card-body">
+            <form method="POST">
+                {% csrf_token %}
+                <!-- BUS DETAILS -->
+                <div class="card mb-4">
+                    <div class="card-header">
+                        <h5>Bus Details</h5>
+                    </div>
+                    <div class="card-body">
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                <label class="form-label">
+                                    Bus Number
+                                </label>
+                                <input
+                                    type="text"
+                                    name="number"
+                                    value="{{ bus.number }}"
+                                    class="form-control"
+                                    required>
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                <label class="form-label">
+                                    Capacity
+                                </label>
+                                <input
+                                    type="number"
+                                    name="capacity"
+                                    value="{{ bus.capacity }}"
+                                    class="form-control"
+                                    required>
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                <label class="form-label">
+                                    Model
+                                </label>
+                                <input
+                                    type="text"
+                                    name="model"
+                                    value="{{ bus.model }}"
+                                    class="form-control">
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                <label class="form-label">
+                                    Teacher Incharge
+                                </label>
+                                <select
+                                    name="teacher"
+                                    class="form-control">
+                                    <option value="">
+                                        Select Teacher
+                                    </option>
+                                    {% for teacher in teachers %}
+                                    <option
+                                        value="{{ teacher.id }}"
+                                        {% if bus.teacher and bus.teacher.id == teacher.id %}
+                                        selected
+                                        {% endif %}>
+                                        {{ teacher.user.get_full_name }}
+                                    </option>
+                                    {% endfor %}
+                                </select>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <!-- DRIVER DETAILS -->
+                <div class="card mb-4">
+                    <div class="card-header">
+                        <h5>Driver Details</h5>
+                    </div>
+                    <div class="card-body">
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                <label class="form-label">
+                                    Driver Name
+                                </label>
+                                <input
+                                    type="text"
+                                    name="driver_name"
+                                    value="{{ driver.name }}"
+                                    class="form-control">
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                <label class="form-label">
+                                    Phone Number
+                                </label>
+                                <input
+                                    type="text"
+                                    name="driver_phone"
+                                    value="{{ driver.phone }}"
+                                    class="form-control">
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                <label class="form-label">
+                                    License Number
+                                </label>
+                                <input
+                                    type="text"
+                                    name="license_number"
+                                    value="{{ driver.license_number }}"
+                                    class="form-control">
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                <label class="form-label">
+                                    License Expiry
+                                </label>
+                                <input
+                                    type="date"
+                                    name="license_expiry"
+                                    value="{{ driver.license_expiry|date:'Y-m-d' }}"
+                                    class="form-control">
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <!-- ROUTE DETAILS -->
+                <div class="card mb-4">
+                    <div class="card-header">
+                        <h5>Route Details</h5>
+                    </div>
+                    <div class="card-body">
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                <label class="form-label">
+                                    Route Name
+                                </label>
+                                <input
+                                    type="text"
+                                    name="route_name"
+                                    value="{{ route.route_name }}"
+                                    class="form-control">
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                <label class="form-label">
+                                    Start Point
+                                </label>
+                                <input
+                                    type="text"
+                                    name="start_point"
+                                    value="{{ route.start_point }}"
+                                    class="form-control">
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                <label class="form-label">
+                                    End Point
+                                </label>
+                                <input
+                                    type="text"
+                                    name="end_point"
+                                    value="{{ route.end_point }}"
+                                    class="form-control">
+                            </div>
+                            <div class="col-md-3 mb-3">
+                                <label class="form-label">
+                                    Distance (KM)
+                                </label>
+                                <input
+                                    type="number"
+                                    step="0.01"
+                                    name="distance"
+                                    value="{{ route.distance }}"
+                                    class="form-control">
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <!-- BUS SUMMARY -->
+                <div class="card mb-4">
+                    <div class="card-header">
+                        <h5>Bus Summary</h5>
+                    </div>
+                    <div class="card-body">
+                        <div class="row text-center">
+                            <div class="col-md-4">
+                                <h4>
+                                    {{ bus.capacity }}
+                                </h4>
+                                <p>Total Capacity</p>
+                            </div>
+                            <div class="col-md-4">
+                                <h4>
+                                    {{ bus.students.count }}
+                                </h4>
+                                <p>Students Assigned</p>
+                            </div>
+                            <div class="col-md-4">
+                                <h4>
+                                    {{ bus.capacity|add:"-"|add:bus.students.count }}
+                                </h4>
+                                <p>Available Seats</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="text-center">
+                    <button
+                        type="submit"
+                        class="btn btn-success btn-lg">
+                        Update Transport Details
+                    </button>
+                    <a
+                        href="{% url 'transport:management' %}"
+                        class="btn btn-secondary btn-lg">
+                        Back
+                    </a>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+{% endblock %}

@@ -53,6 +53,20 @@
         </div>
         <div class="col-md-3">
             <div class="stat-card" style="border-left-color: #f97316;">
+                <h5><i class="fas fa-user-slash"></i> Absent Today</h5>
+                <div class="stat-value">{{ students_absent }}</div>
+                <div class="stat-change">students absent today</div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="stat-card" style="border-left-color: #8b5cf6;">
+                <h5><i class="fas fa-user-tie"></i> Employees Absent</h5>
+                <div class="stat-value">{{ teacher_absent_today }}</div>
+                <div class="stat-change">of {{ total_teachers }} teachers</div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="stat-card" style="border-left-color: #f97316;">
                 <h5><i class="fas fa-chalkboard-teacher"></i> Teacher Attendance</h5>
                 <div class="stat-value">{{ teacher_attendance_percentage }}%</div>
                 <div class="stat-change">{{ teacher_present_today }} present today</div>
@@ -84,7 +98,7 @@
         <div class="col-lg-12 mb-3">
             <div class="card">
                 <div class="card-header">
-                    <i class="fas fa-clipboard-list"></i> Teacher Attendance Actions
+                    <i class="fas fa-clipboard-list"></i>Quick Actions
                 </div>
                 <div class="card-body">
                     <div class="row g-2">
@@ -94,17 +108,245 @@
                             </a>
                         </div>
                         <div class="col-md-4">
-                            <a href="{% url 'attendance:dashboard' %}" class="btn btn-outline-secondary w-100">
-                                <i class="fas fa-calendar-check"></i> View Attendance Analytics
+                            <a href="{% url 'dashboard:expenses' %}" class="btn btn-outline-success w-100">
+                                <i class="fas fa-file-invoice-dollar"></i> Manage Expenses
+                            </a>
+                        </div>
+                        <div class="col-md-4">
+                            <a href="{% url 'transport:management'%}" class="btn btn-outline-info w-100">
+                                <i class="fas fa-bus"></i> Manage Transport
+                            </a>
+                        </div>
+                        <div class="col-md-4">
+                            <a href="{% url 'transport:add_transport'%}" class="btn btn-outline-info w-100">
+                                <i class="fas fa-plus"></i> Add Transport
+                            </a>
+                        </div>
+                        <div class="col-md-4">
+                            <a href="{% url 'attendance:reports'%}" class="btn btn-outline-info w-100">
+                                <i class="fas fa-chart-bar"></i> View Attendence Reports
                             </a>
                         </div>
                     </div>
                 </div>
             </div>
         </div>
+        <div class="col-lg-12">
+            <div class="card">
+                <div class="card-header d-flex justify-content-between align-items-center">
+                    <div>
+                        <i class="fas fa-calendar-alt"></i> Monthly Attendance Report
+                    </div>
+                    <div>
+                        <form method="get" class="row g-2 align-items-center">
+                            <div class="col-auto">
+                                <input type="month" class="form-control" name="report_month" value="{{ selected_report_month }}">
+                            </div>
+                            <div class="col-auto">
+                                <select name="report_class_id" class="form-select">
+                                    <option value="">All Classes</option>
+                                    {% for cls in classes %}
+                                        <option value="{{ cls.id }}" {% if report_class_id == cls.id|stringformat:"s" %}selected{% endif %}>{{ cls }}</option>
+                                    {% endfor %}
+                                </select>
+                            </div>
+                            <div class="col-auto">
+                                <button type="submit" class="btn btn-primary">Refresh</button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+                <div class="card-body">
+                    <p class="text-muted mb-3">Showing attendance for {{ report_month_label }}.</p>
+                    <div class="table-responsive">
+                        <table class="table table-sm table-striped table-hover">
+                            <thead>
+                                <tr>
+                                    <th>Class</th>
+                                    <th>Students</th>
+                                    <th>Present Records</th>
+                                    <th>Total Records</th>
+                                    <th>Expected Records</th>
+                                    <th>Attendance %</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for row in class_attendance_report %}
+                                <tr>
+                                    <td>{{ row.class_name }}</td>
+                                    <td>{{ row.student_count }}</td>
+                                    <td>{{ row.present_count }}</td>
+                                    <td>{{ row.total_records }}</td>
+                                    <td>{{ row.expected_records }}</td>
+                                    <td>{{ row.average_percentage }}%</td>
+                                </tr>
+                                {% empty %}
+                                <tr>
+                                    <td colspan="6" class="text-center">No attendance records found for the selected month.</td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
 
-        
+        <div class="col-lg-12">
+            <div class="card">
+                <div class="card-header">
+                    <i class="fas fa-user-graduate"></i> Student Search & Filter
+                </div>
+                <div class="card-body">
+                    <form method="get" class="row g-3 align-items-end">
+                        <div class="col-md-5">
+                            <label class="form-label">Student ID / Name</label>
+                            <input type="text"
+                                   name="student_search_query"
+                                   class="form-control"
+                                   value="{{ student_search_query }}"
+                                   placeholder="Enter student ID, admission number, or name">
+                        </div>
+                        <div class="col-md-4">
+                            <label class="form-label">Class</label>
+                            <select name="student_class_id" class="form-select">
+                                <option value="">All Classes</option>
+                                {% for cls in classes %}
+                                    <option value="{{ cls.id }}" {% if student_class_id|stringformat:"i" == cls.id|stringformat:"i" %}selected{% endif %}>
+                                        {{ cls }}
+                                    </option>
+                                {% endfor %}
+                            </select>
+                        </div>
+                        <div class="col-md-3">
+                            <button type="submit" class="btn btn-primary w-100">Filter</button>
+                        </div>
+                    </form>
 
+                    {% if student_search_query or student_class_id %}
+                        {% if student_search_results %}
+                            {% if student_search_results|length == 1 %}
+                                {% with student=student_search_results.0 %}
+                                <div class="card mt-3 border-primary">
+                                    <div class="card-body">
+                                        <h5 class="card-title mb-3">Student Details</h5>
+                                        <div class="row g-3">
+                                            <div class="col-md-3"><strong>Student ID:</strong><br>{{ student.student_id }}</div>
+                                            <div class="col-md-3"><strong>Name:</strong><br>{{ student.user.get_full_name }}</div>
+                                            <div class="col-md-3"><strong>Class / Section:</strong><br>{{ student.section.class_model.standard }} - {{ student.section.name }}</div>
+                                            <div class="col-md-3"><strong>Roll No:</strong><br>{{ student.roll_number }}</div>
+                                            <div class="col-md-3"><strong>Admission No:</strong><br>{{ student.admission_number }}</div>
+                                            <div class="col-md-3"><strong>Phone:</strong><br>{{ student.phone }}</div>
+                                            <div class="col-md-3"><strong>Email:</strong><br>{{ student.user.email }}</div>
+                                            <div class="col-md-3"><strong>Status:</strong><br>{% if student.is_active %}<span class="badge bg-success">Active</span>{% else %}<span class="badge bg-secondary">Inactive</span>{% endif %}</div>
+                                        </div>
+                                    </div>
+                                </div>
+                                {% endwith %}
+                            {% else %}
+                                <div class="table-responsive mt-3">
+                                    <table class="table table-sm table-striped table-hover mb-0">
+                                        <thead>
+                                            <tr>
+                                                <th>Student ID</th>
+                                                <th>Name</th>
+                                                <th>Class / Section</th>
+                                                <th>Roll No</th>
+                                                <th>Phone</th>
+                                                <th>Status</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            {% for student in student_search_results %}
+                                                <tr>
+                                                    <td>{{ student.student_id }}</td>
+                                                    <td>{{ student.user.get_full_name }}</td>
+                                                    <td>{{ student.section.class_model.standard }} - {{ student.section.name }}</td>
+                                                    <td>{{ student.roll_number }}</td>
+                                                    <td>{{ student.phone }}</td>
+                                                    <td>
+                                                        {% if student.is_active %}
+                                                            <span class="badge bg-success">Active</span>
+                                                        {% else %}
+                                                            <span class="badge bg-secondary">Inactive</span>
+                                                        {% endif %}
+                                                    </td>
+                                                </tr>
+                                            {% endfor %}
+                                        </tbody>
+                                    </table>
+                                </div>
+                            {% endif %}
+                        {% else %}
+                            <p class="text-muted mt-3 mb-0">No student records found for this filter.</p>
+                        {% endif %}
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+
+        <div class="col-lg-6">
+            <div class="card">
+                <div class="card-header">
+                    <i class="fas fa-search-dollar"></i> Search Student Fee Details
+                </div>
+                <div class="card-body">
+                    <form method="get" action="">
+                        <div class="input-group">
+                            <input type="text"
+                                   name="student_fee_query"
+                                   class="form-control"
+                                   value="{{ student_fee_query }}"
+                                   placeholder="Search by student ID, admission number, or name">
+                            <button class="btn btn-outline-primary" type="submit">Search</button>
+                        </div>
+                    </form>
+
+                    {% if student_fee_query %}
+                        {% if fee_search_results %}
+                            <div class="table-responsive mt-3">
+                                <table class="table table-sm table-striped table-hover">
+                                    <thead>
+                                        <tr>
+                                            <th>Student ID</th>
+                                            <th>Name</th>
+                                            <th>Class / Section</th>
+                                            <th>Fee Structure</th>
+                                            <th>Month</th>
+                                            <th>Due</th>
+                                            <th>Paid</th>
+                                            <th>Balance</th>
+                                            <th>Status</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        {% for fee in fee_search_results %}
+                                            <tr>
+                                                <td>{{ fee.student.student_id }}</td>
+                                                <td>{{ fee.student.user.get_full_name }}</td>
+                                                <td>{{ fee.student.section.class_model.standard }} - {{ fee.student.section.name }}</td>
+                                                <td>{{ fee.fee_structure }}</td>
+                                                <td>{{ fee.month|date:"M Y" }}</td>
+                                                <td>{{ fee.amount_due }}</td>
+                                                <td>{{ fee.amount_paid }}</td>
+                                                <td>{{ fee.amount_due_balance }}</td>
+                                                <td>
+                                                    <span class="badge {% if fee.status == 'paid' %}bg-success{% elif fee.status == 'partial' %}bg-warning text-dark{% else %}bg-danger{% endif %}">
+                                                        {{ fee.get_status_display }}
+                                                    </span>
+                                                </td>
+                                            </tr>
+                                        {% endfor %}
+                                    </tbody>
+                                </table>
+                            </div>
+                        {% else %}
+                            <p class="text-muted mt-3 mb-0">No fee records found for your search.</p>
+                        {% endif %}
+                    {% endif %}
+                </div>
+            </div>
+        </div>
 
         <div class="col-lg-6">
             <div class="card">
@@ -196,33 +438,6 @@
                     </ul>
                     {% else %}
                     <p class="text-muted mb-0">No recent student records.</p>
-                    {% endif %}
-                </div>
-            </div>
-        </div>
-    </div>
-
-    <div class="row mt-4">
-        <div class="col-md-12">
-            <div class="card">
-                <div class="card-header">
-                    <i class="fas fa-chalkboard-teacher"></i> Top Teachers
-                </div>
-                <div class="card-body">
-                    {% if top_teachers %}
-                    <div class="list-group">
-                        {% for teacher in top_teachers %}
-                        <div class="list-group-item d-flex justify-content-between align-items-center">
-                            <div>
-                                <strong>{{ teacher.user.get_full_name }}</strong>
-                                <div class="small text-muted">{{ teacher.specialization }}</div>
-                            </div>
-                            <span class="badge bg-primary rounded-pill">{{ teacher.avg_rating|default:"N/A" }}</span>
-                        </div>
-                        {% endfor %}
-                    </div>
-                    {% else %}
-                    <p class="text-muted mb-0">No teacher performance data found.</p>
                     {% endif %}
                 </div>
             </div>

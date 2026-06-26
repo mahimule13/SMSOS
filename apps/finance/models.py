@@ -46,6 +46,10 @@ class Expense(models.Model):
     description = models.TextField()
     date = models.DateField()
     voucher_number = models.CharField(max_length=50, unique=True)
+    bill_attachment = models.FileField(upload_to='expense_bills/', blank=True, null=True)
+    transport_bus_number = models.CharField(max_length=50, blank=True, null=True)
+    transport_driver_name = models.CharField(max_length=100, blank=True, null=True)
+    transport_route = models.CharField(max_length=150, blank=True, null=True)
     paid_by = models.ForeignKey(User, on_delete=models.SET_NULL, null=True)
     created_at = models.DateTimeField(auto_now_add=True)
     

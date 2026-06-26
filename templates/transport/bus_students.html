@@ -1,0 +1,58 @@
+{% extends "base/layout.html" %}
+{% block title %}Bus Students{% endblock %}
+{% block content %}
+<div class="container-fluid">
+    <div class="card">
+        <div class="card-header">
+            <h4>
+                Students Travelling in Bus {{ bus.number }}
+            </h4>
+        </div>
+        <div class="card-body">
+            <div class="mb-3">
+                <strong>Driver:</strong>
+                {% if bus.driver %}
+                    {{ bus.driver.name }}
+                    ({{ bus.driver.phone }})
+                {% else %}
+                    Not Assigned
+                {% endif %}
+            </div>
+            <div class="mb-3">
+                <strong>Teacher Incharge:</strong>
+                {% if bus.teacher %}
+                    {{ bus.teacher.user.get_full_name }}
+                {% else %}
+                    Not Assigned
+                {% endif %}
+            </div>
+            <table class="table table-bordered">
+                <thead>
+                    <tr>
+                        <th>Student Name</th>
+                        <th>Admission No</th>
+                        <th>Route</th>
+                        <th>Start Date</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for item in students %}
+                    <tr>
+                        <td>{{ item.student.user.get_full_name }}</td>
+                        <td>{{ item.student.admission_number }}</td>
+                        <td>{{ item.route.route_name }}</td>
+                        <td>{{ item.start_date }}</td>
+                    </tr>
+                    {% empty %}
+                    <tr>
+                        <td colspan="4">
+                            No Students Assigned
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+{% endblock %}

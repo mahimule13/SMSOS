@@ -20,7 +20,7 @@ class ExpenseCategoryAdmin(admin.ModelAdmin):
 
 @admin.register(Expense)
 class ExpenseAdmin(admin.ModelAdmin):
-    list_display = ('category', 'amount', 'date', 'voucher_number')
+    list_display = ('category', 'amount', 'date', 'voucher_number', 'bill_attachment')
     list_filter = ('category', 'date')
 
 
