@@ -260,13 +260,14 @@
             <li><a href="{% url 'dashboard:teacher_dashboard' %}"><i class="fas fa-chart-line"></i> Dashboard</a></li>
             <li><a href="{% url 'attendance:student_attendance' %}"><i class="fas fa-clipboard-check"></i> Attendance</a></li>
             <li><a href="{% url 'homework:list' %}"><i class="fas fa-book"></i> Homework</a></li>
-            <li><a href="{% url 'homework:create' %}"><i class="fas fa-plus-square"></i> New Assignment</a></li>
+            <li><a href="{% url 'homework:create_assignment' %}"><i class="fas fa-plus-square"></i> New Assignment</a></li>
 
         <!-- STUDENT -->
         {% elif user_profile.role == 'student' %}
 
             <li><a href="{% url 'dashboard:student_dashboard' %}"><i class="fas fa-chart-line"></i> Dashboard</a></li>
             <li><a href="{% url 'homework:list' %}"><i class="fas fa-book"></i> Homework</a></li>
+            <li><a href="{% url 'students:student_assignments' %}"><i class="fas fa-book-open"></i> Assignments</a></li>
 
         {% endif %}
 

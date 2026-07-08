@@ -1,0 +1,97 @@
+{% extends 'base.html' %}
+
+{% block content %}
+
+<div class="container mt-4">
+
+<div class="card shadow">
+
+<div class="card-header bg-primary text-white">
+
+<h4>Submission Details</h4>
+
+</div>
+
+<div class="card-body">
+
+<p>
+
+<strong>Assignment :</strong>
+
+{{ submission.assignment.title }}
+
+</p>
+
+<p>
+
+<strong>Subject :</strong>
+
+{{ submission.assignment.subject.name }}
+
+</p>
+
+<p>
+
+<strong>Submitted On :</strong>
+
+{{ submission.submitted_at }}
+
+</p>
+
+<p>
+
+<strong>Teacher Remarks :</strong>
+
+{{ submission.remarks|default:"Not Checked Yet" }}
+
+</p>
+
+<p>
+
+<strong>Marks :</strong>
+
+{{ submission.marks_obtained|default:"Pending" }}
+
+</p>
+
+<p>
+
+<strong>Status :</strong>
+
+{% if submission.is_checked %}
+
+<span class="badge bg-success">
+
+Checked
+
+</span>
+
+{% else %}
+
+<span class="badge bg-warning">
+
+Pending
+
+</span>
+
+{% endif %}
+
+</p>
+
+<a
+
+href="{{ submission.submission_file.url }}"
+
+class="btn btn-success">
+
+Download Submitted File
+
+</a>
+
+</div>
+
+</div>
+
+</div>
+
+{% endblock %}

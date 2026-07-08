@@ -1,0 +1,92 @@
+{% extends 'base.html' %}
+
+{% block content %}
+
+<div class="container mt-4">
+
+    <div class="row justify-content-center">
+
+        <div class="col-md-8">
+
+            <div class="card shadow">
+
+                <div class="card-header bg-success text-white">
+
+                    <h4>Submit Assignment</h4>
+
+                </div>
+
+                <div class="card-body">
+
+                    <h5>{{ assignment.title }}</h5>
+
+                    <hr>
+
+                    <p>
+                        <strong>Subject :</strong>
+                        {{ assignment.subject.name }}
+                    </p>
+
+                    <p>
+                        <strong>Due Date :</strong>
+                        {{ assignment.due_date }}
+                    </p>
+
+                    <p>
+                        <strong>Description :</strong>
+                    </p>
+
+                    <div class="border rounded p-3 mb-4">
+
+                        {{ assignment.description }}
+
+                    </div>
+
+                    <form method="POST"
+                          enctype="multipart/form-data">
+
+                        {% csrf_token %}
+
+                        <div class="mb-3">
+
+                            <label class="form-label">
+
+                                Upload Assignment
+
+                            </label>
+
+                            <input
+                                type="file"
+                                class="form-control"
+                                name="submission_file"
+                                required>
+
+                        </div>
+
+                        <button
+                            class="btn btn-success">
+
+                            Submit Assignment
+
+                        </button>
+
+                        <a href="{% url 'students:student_assignments' %}"
+                           class="btn btn-secondary">
+
+                            Cancel
+
+                        </a>
+
+                    </form>
+
+                </div>
+
+            </div>
+
+        </div>
+
+    </div>
+
+</div>
+
+{% endblock %}

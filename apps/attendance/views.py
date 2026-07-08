@@ -4,7 +4,8 @@ from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib import messages
 from django.contrib.auth.decorators import login_required
 from django.utils import timezone
-from datetime import timedelta
+from datetime import timedelta , datetime
+
 from apps.classes.models import ClassModel, Section
 from urllib3 import request
 from apps.accounts.decorators import role_required
@@ -141,7 +142,15 @@ def attendance_reports(request):
         )
     week_start = today - timedelta(days=7)
     month_start = today.replace(day=1)
+    if from_date:
+        week_start = datetime.strptime(from_date, "%Y-%m-%d").date()
+    else:
+        week_start = today - timedelta(days=7)
 
+    if from_date:
+        month_start = datetime.strptime(from_date, "%Y-%m-%d").date().replace(day=1)
+    else:
+        month_start = today.replace(day=1)
     # Daily
     teacher_daily_present = TeacherAttendance.objects.filter(
         date=today,
@@ -224,21 +233,39 @@ def attendance_reports(request):
         .annotate(total=Count('id'))
     )
 
+    weekly_students = StudentAttendance.objects.filter(
+        student__in=students
+    )
+
+    if from_date:
+        weekly_students = weekly_students.filter(date__gte=from_date)
+
+    if to_date:
+        weekly_students = weekly_students.filter(date__lte=to_date)
+
     weekly_students = (
-        StudentAttendance.objects
-        .filter(student__in=students,date__gte=week_start)
+        weekly_students
         .values('date')
         .annotate(total=Count('id'))
         .order_by('date')
-)
+    )
+
+    monthly_students = StudentAttendance.objects.filter(
+        student__in=students
+    )
+
+    if from_date:
+        monthly_students = monthly_students.filter(date__gte=from_date)
+
+    if to_date:
+        monthly_students = monthly_students.filter(date__lte=to_date)
 
     monthly_students = (
-        StudentAttendance.objects
-        .filter(student__in=students,date__gte=month_start)
+        monthly_students
         .values('date')
         .annotate(total=Count('id'))
         .order_by('date')
-)
+    )
 
     student_labels = [
         str(item['date'])
@@ -264,22 +291,36 @@ def attendance_reports(request):
 # TEACHER CHART DATA
 # ==========================================
 
+    
+    weekly_teachers = TeacherAttendance.objects.all()
+
+    if from_date:
+        weekly_teachers = weekly_teachers.filter(date__gte=from_date)
+
+    if to_date:
+        weekly_teachers = weekly_teachers.filter(date__lte=to_date)
+
     weekly_teachers = (
-        TeacherAttendance.objects
-        .filter(date__gte=week_start)
+        weekly_teachers
         .values('date')
         .annotate(total=Count('id'))
         .order_by('date')
     )
+
+    monthly_teachers = TeacherAttendance.objects.all()
+
+    if from_date:
+        monthly_teachers = monthly_teachers.filter(date__gte=from_date)
+
+    if to_date:
+        monthly_teachers = monthly_teachers.filter(date__lte=to_date)
 
     monthly_teachers = (
-        TeacherAttendance.objects
-        .filter(date__gte=month_start)
+        monthly_teachers
         .values('date')
         .annotate(total=Count('id'))
         .order_by('date')
     )
-
     teacher_labels = [
         str(item['date'])
         for item in monthly_teachers

@@ -39,7 +39,7 @@ def student_list(request):
             Q(user__last_name__icontains=query)
         )
 
-    sections = Section.objects.all()
+    sections = Section.objects.filter(is_active=True)
     context = {
         'students': students,
         'sections': sections,
@@ -49,7 +49,7 @@ def student_list(request):
     return render(request, 'students/list.html', context)
 
 
-@login_required(login_url='login')
+@login_required(login_url='accounts:login')
 @role_required('super_admin', 'school_admin', 'principal')
 def create_student(request):
     if request.method == 'POST':
@@ -146,7 +146,7 @@ def create_student(request):
                 messages.error(request, str(e))
 
     classes = ClassModel.objects.filter(is_active=True)
-    sections = Section.objects.all()
+    sections = Section.objects.filter(is_active=True)
     fee_structures = FeeStructure.objects.filter(is_active=True)
     context = {'classes': classes, 'sections': sections, 'fee_structures': fee_structures}
     return render(request, 'students/create.html', context)
@@ -233,7 +233,7 @@ def build_attendance_calendar(student, month_str=None):
     }
 
 
-@login_required(login_url='login')
+@login_required(login_url='accounts:login')
 def student_detail(request, pk):
     student = get_object_or_404(Student, pk=pk)
     today = date.today()
@@ -259,7 +259,7 @@ def student_detail(request, pk):
     return render(request, 'students/detail.html', context)
 
 
-@login_required(login_url='login')
+@login_required(login_url='accounts:login')
 @role_required('super_admin', 'school_admin', 'principal')
 def edit_student(request, pk):
     student = get_object_or_404(Student, pk=pk)
@@ -282,7 +282,7 @@ def edit_student(request, pk):
     return render(request, 'students/edit.html', context)
 
 
-@login_required(login_url='login')
+@login_required(login_url='accounts:login')
 @role_required('super_admin', 'school_admin', 'principal')
 def delete_student(request, pk):
     student = get_object_or_404(Student, pk=pk)
@@ -291,7 +291,7 @@ def delete_student(request, pk):
     return redirect('students:list')
 
 
-@login_required(login_url='login')
+@login_required(login_url='accounts:login')
 @role_required('super_admin', 'school_admin', 'principal', 'teacher')
 def attendance_view(request):
     today = date.today()
@@ -304,9 +304,9 @@ def attendance_view(request):
 
     if request.user.profile.role == 'teacher':
         teacher = request.user.teacher_profile
-        allowed_sections = [sa.section for sa in teacher.subject_allocations.all()]
+        allowed_sections = teacher.subject_allocation.values_list('section', flat=True).distinct()
         students = students.filter(section__in=allowed_sections)
-        sections = allowed_sections
+        sections = Section.objects.filter(id__in=allowed_sections)
 
     if section_id:
         students = students.filter(section_id=section_id)
@@ -317,7 +317,7 @@ def attendance_view(request):
             is_present = request.POST.get(f'present_{student.id}') == 'on'
             StudentAttendance.objects.update_or_create(
                 student=student,
-                date=attendance_date,
+                date=post_date,
                 defaults={'is_present': is_present, 'marked_by': request.user.teacher_profile if hasattr(request.user, 'teacher_profile') else None}
             )
 
@@ -332,3 +332,89 @@ def attendance_view(request):
     }
 
     return render(request, 'students/attendance.html', context)
+from django.contrib.auth.decorators import login_required
+from django.shortcuts import render
+
+from apps.homework.models import Assignment, AssignmentSubmission
+
+
+@login_required(login_url='login')
+def student_assignments(request):
+    try:
+        student = request.user.student_profile
+    except Exception:
+        messages.error(request, 'Your student profile is not set up yet. Contact the principal/admin to create it.')
+        return redirect('accounts:profile')
+
+    assignments = (
+        Assignment.objects.filter(section=student.section)
+        .select_related('subject', 'section')
+        .order_by('-created_at')
+    )
+
+    submitted_assignment_ids = set(
+        AssignmentSubmission.objects.filter(student=student, assignment__in=assignments)
+        .values_list('assignment_id', flat=True)
+    )
+
+    context = {
+        'assignments': assignments,
+        'submitted_assignment_ids': submitted_assignment_ids,
+    }
+
+    return render(request, 'students/assignments.html', context)
+
+
+@login_required(login_url='login')
+def submit_assignment(request, pk):
+    assignment = get_object_or_404(Assignment, pk=pk)
+
+    try:
+        student = request.user.student_profile
+    except Exception:
+        messages.error(request, 'Your student profile is not set up yet. Contact the principal/admin to create it.')
+        return redirect('accounts:profile')
+
+    if assignment.section_id != student.section_id:
+        messages.error(request, 'This assignment is not assigned to your section.')
+        return redirect('students:student_assignments')
+
+    if request.method == 'POST':
+        if 'submission_file' not in request.FILES:
+            messages.error(request, 'Please upload your assignment file.')
+            return redirect('students:submit_assignment', pk=pk)
+
+        AssignmentSubmission.objects.update_or_create(
+            assignment=assignment,
+            student=student,
+            defaults={'submission_file': request.FILES['submission_file']}
+        )
+
+        messages.success(request, 'Assignment submitted successfully.')
+        return redirect('students:my_submissions')
+
+    context = {'assignment': assignment}
+    return render(request, 'students/submit_assignment.html', context)
+
+
+@login_required(login_url='login')
+def my_submissions(request):
+    student = request.user.student_profile
+
+    submissions = (
+        AssignmentSubmission.objects.filter(student=student)
+        .select_related('assignment', 'assignment__subject', 'assignment__section')
+        .order_by('-submitted_at')
+    )
+
+    context = {'submissions': submissions}
+    return render(request, 'students/my_submissions.html', context)
+
+
+@login_required(login_url='login')
+def assignment_submission_detail(request, pk):
+    student = request.user.student_profile
+    submission = get_object_or_404(AssignmentSubmission, pk=pk, student=student)
+
+    context = {'submission': submission}
+    return render(request, 'students/submission_detail.html', context)

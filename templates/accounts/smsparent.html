@@ -44,16 +44,25 @@
   <div class="col-md-4">
 
     <label class="form-label">Filter Students</label>
-
     <select class="form-select" name="student_filter">
 
-      <option value="all">All Students</option>
+<option value="all"
+{% if student_filter == "all" %}
+selected
+{% endif %}
+>
+All Students
+</option>
 
-      <option value="pending">
-        Fee Pending Students
-      </option>
+<option value="pending"
+{% if student_filter == "pending" %}
+selected
+{% endif %}
+>
+Fee Pending Students
+</option>
 
-    </select>
+</select>
 
   </div>
 
@@ -71,10 +80,6 @@
   </div>
 
 </div>
-                <h5 class="mb-0">Select Students</h5>
-                <button type="submit" name="action" value="load_students" class="btn btn-outline-primary btn-sm">
-                  Refresh List
-                </button>
               </div>
               <hr />
 
@@ -93,7 +98,7 @@
                       {% for s in students %}
                         <div class="form-check mb-2">
                           <input class="form-check-input" type="checkbox" value="{{ s.id }}" name="student_ids" id="stu_{{ s.id }}"
-                            {% if s.id|stringformat:'s' in selected_student_ids %}checked{% endif %}>
+                            {% if s.id in select_students_ids %}checked{% endif %}>
                           <label class="form-check-label" for="stu_{{ s.id }}">
                             <b>{{ s.user.get_full_name|default:s.user.username }}</b>
                             <span class="text-muted">(ID: {{ s.student_id }}, Roll: {{ s.roll_number }})</span>
@@ -140,7 +145,7 @@
                           {% endcomment %}
 
                           <div class="form-check mb-2">
-                            <input class="form-check-input" type="checkbox" name="contact_phone" value="father:{{ s.id }}" id="f_{{ s.id }}" checked>
+                            <input class="form-check-input" type="checkbox" name="contact_phone" value="father:{{ s.id }}" id="f_{{ s.id }}" {% if "father:"|add:s.id|stringformat:"s" in selected_contacts %}checked{% endif %}>
                             <label class="form-check-label" for="f_{{ s.id }}">
                               <b>{{ s.father_name }}</b>
                               <span class="text-muted">({{ s.father_phone }})</span>
@@ -148,8 +153,7 @@
                           </div>
 
                           <div class="form-check mb-2">
-                            <input class="form-check-input" type="checkbox" name="contact_phone" value="mother:{{ s.id }}" id="m_{{ s.id }}"
-                              {% if s.mother_phone %}{% else %}disabled{% endif %}>
+                            <input class="form-check-input" type="checkbox" name="contact_phone" value="mother:{{ s.id }}" id="m_{{ s.id }}"{% if "mother:"|add:s.id|stringformat:"s" in selected_contacts %}checked{% endif %} >
                             <label class="form-check-label" for="m_{{ s.id }}">
                               Mother: <b>{{ s.mother_name }}</b>
                               <span class="text-muted">({{ s.mother_phone }})</span>
@@ -157,8 +161,7 @@
                           </div>
 
                           <div class="form-check">
-                            <input class="form-check-input" type="checkbox" name="contact_phone" value="guardian:{{ s.id }}" id="g_{{ s.id }}"
-                              {% if not s.guardian_phone %}disabled{% endif %}>
+                            <input class="form-check-input" type="checkbox" name="contact_phone" value="guardian:{{ s.id }}" id="g_{{ s.id }}" {% if "guardian:"|add:s.id|stringformat:"s" in selected_contacts %}checked{% endif %} >
                             <label class="form-check-label" for="g_{{ s.id }}">
                               Guardian: <b>{{ s.guardian_name|default:'—' }}</b>
                               <span class="text-muted">({{ s.guardian_phone|default:'—' }})</span>

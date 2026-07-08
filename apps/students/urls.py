@@ -10,4 +10,28 @@ urlpatterns = [
     path('<int:pk>/edit/', views.edit_student, name='edit'),
     path('<int:pk>/delete/', views.delete_student, name='delete'),
     path('attendance/', views.attendance_view, name='attendance'),
+
+    path(
+        'my-assignments/',
+        views.student_assignments,
+        name='student_assignments'
+    ),
+
+    path(
+        'assignments/<int:pk>/submit/',
+        views.submit_assignment,
+        name='submit_assignment'
+    ),
+    path(
+        'my-submissions/',
+        views.my_submissions,
+        name='my_submissions'
+    ),
+
+    path(
+        'submission/<int:pk>/',
+        views.assignment_submission_detail,
+        name='assignment_submission_detail'
+    ),
 ]
+

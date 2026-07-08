@@ -1,0 +1,286 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Assignment Details{% endblock %}
+
+{% block content %}
+
+<div class="container-fluid py-4">
+
+    <!-- Header -->
+    <div class="d-flex justify-content-between align-items-center mb-4">
+
+        <div>
+
+            <h2 class="fw-bold">
+                <i class="fas fa-book text-primary"></i>
+                Assignment Details
+            </h2>
+
+            <p class="text-muted mb-0">
+                View complete assignment information.
+            </p>
+
+        </div>
+
+        <div>
+
+            <a href="{% url 'homework:assignment_list' %}"
+               class="btn btn-secondary">
+
+                <i class="fas fa-arrow-left"></i>
+
+                Back
+
+            </a>
+
+            <a href="{% url 'homework:assignment_submissions' assignment.id %}"
+               class="btn btn-success">
+
+                <i class="fas fa-users"></i>
+
+                Student Submissions
+
+            </a>
+
+        </div>
+
+    </div>
+
+    <div class="row">
+
+        <!-- Left Side -->
+
+        <div class="col-lg-8">
+
+            <div class="card shadow-sm border-0">
+
+                <div class="card-header bg-primary text-white">
+
+                    <h5 class="mb-0">
+
+                        Assignment Information
+
+                    </h5>
+
+                </div>
+
+                <div class="card-body">
+
+                    <table class="table table-bordered">
+
+                        <tr>
+
+                            <th width="30%">Title</th>
+
+                            <td>{{ assignment.title }}</td>
+
+                        </tr>
+
+                        <tr>
+
+                            <th>Subject</th>
+
+                            <td>{{ assignment.subject }}</td>
+
+                        </tr>
+
+                        <tr>
+
+                            <th>Section</th>
+
+                            <td>{{ assignment.section }}</td>
+
+                        </tr>
+
+                        <tr>
+
+                            <th>Total Marks</th>
+
+                            <td>{{ assignment.total_marks }}</td>
+
+                        </tr>
+
+                        <tr>
+
+                            <th>Due Date</th>
+
+                            <td>{{ assignment.due_date }}</td>
+
+                        </tr>
+
+                        <tr>
+
+                            <th>Created By</th>
+
+                            <td>
+
+                                {{ assignment.created_by.user.get_full_name }}
+
+                            </td>
+
+                        </tr>
+
+                        <tr>
+
+                            <th>Created On</th>
+
+                            <td>
+
+                                {{ assignment.created_at }}
+
+                            </td>
+
+                        </tr>
+
+                    </table>
+
+                </div>
+
+            </div>
+
+            <div class="card shadow-sm border-0 mt-4">
+
+                <div class="card-header bg-info text-white">
+
+                    <h5 class="mb-0">
+
+                        Assignment Description
+
+                    </h5>
+
+                </div>
+
+                <div class="card-body">
+
+                    {{ assignment.description|linebreaks }}
+
+                </div>
+
+            </div>
+
+        </div>
+
+        <!-- Right Side -->
+
+        <div class="col-lg-4">
+
+            <div class="card shadow-sm border-0">
+
+                <div class="card-header bg-success text-white">
+
+                    <h5 class="mb-0">
+
+                        Assignment Summary
+
+                    </h5>
+
+                </div>
+
+                <div class="card-body">
+
+                    <div class="mb-4 text-center">
+
+                        <h2 class="text-primary">
+
+                            {{ assignment.submissions.count }}
+
+                        </h2>
+
+                        <small class="text-muted">
+
+                            Total Submissions
+
+                        </small>
+
+                    </div>
+
+                    <hr>
+
+                    <div class="mb-3">
+
+                        <strong>Status</strong>
+
+                        <br>
+
+                        {% if assignment.due_date >= today %}
+
+                            <span class="badge bg-success">
+
+                                Active
+
+                            </span>
+
+                        {% else %}
+
+                            <span class="badge bg-danger">
+
+                                Closed
+
+                            </span>
+
+                        {% endif %}
+
+                    </div>
+
+                    <div class="mb-3">
+
+                        <strong>Due Date</strong>
+
+                        <br>
+
+                        {{ assignment.due_date }}
+
+                    </div>
+
+                    <div class="mb-3">
+
+                        <strong>Total Marks</strong>
+
+                        <br>
+
+                        {{ assignment.total_marks }}
+
+                    </div>
+
+                    <hr>
+
+                    <a href="{% url 'homework:assignment_submissions' assignment.id %}"
+                       class="btn btn-success w-100 mb-2">
+
+                        <i class="fas fa-users"></i>
+
+                        View Student Submissions
+
+                    </a>
+
+                    <a href="{% url 'homework:edit_assignment' assignment.id %}"
+                       class="btn btn-warning w-100 mb-2">
+
+                        <i class="fas fa-edit"></i>
+
+                        Edit Assignment
+
+                    </a>
+
+                    <a href="{% url 'homework:delete_assignment' assignment.id %}"
+                       class="btn btn-danger w-100"
+                       onclick="return confirm('Delete this assignment?');">
+
+                        <i class="fas fa-trash"></i>
+
+                        Delete Assignment
+
+                    </a>
+
+                </div>
+
+            </div>
+
+        </div>
+
+    </div>
+
+</div>
+
+{% endblock %}

@@ -1,6 +1,5 @@
 from django.urls import path
 from . import views
-
 app_name = 'accounts'
 
 urlpatterns = [
@@ -98,22 +97,13 @@ urlpatterns = [
         name='change_password'
     ),
 
-    path(
-        'forgot-password/',
-        views.forgot_password_view,
-        name='forgot_password'
-    ),
-
-    path(
-        'reset-password/<str:token>/',
-        views.reset_password_view,
-        name='reset_password'
-    ),
+    
     path('smsstudent/', views.smsstudent, name='smsstudent'),
     path('smsteacher/', views.smsteacher, name='smsteacher'),
     path('smsparent/', views.smsparent, name='smsparent'),
     path('smslibrary/', views.smslibrary, name='smslibrary'),
     path('smsfee/', views.smsfee, name='smsfee'),
     path('smsanalytic/', views.smsanalytic, name='smsanalytic'),
+    
 
 ]

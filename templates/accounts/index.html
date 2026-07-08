@@ -464,11 +464,10 @@
             <div class="col-lg-4 col-md-6 px-lg-5">
                 <h5 class="footer-heading">Quick Links</h5>
                 <ul class="list-unstyled footer-links">
-                    <li><a href="index.html"><i class="fas fa-chevron-right"></i> Home</a></li>
-                    <li><a href="about.html"><i class="fas fa-chevron-right"></i> About Us</a></li>
-                    <li><a href="services.html"><i class="fas fa-chevron-right"></i> Services</a></li>
-                    <li><a href="features.html"><i class="fas fa-chevron-right"></i> Key Features</a></li>
-                    <li><a href="pages/register.html"><i class="fas fa-chevron-right"></i> Register School</a></li>
+                    <li><a href="{% url 'accounts:index' %}"><i class="fas fa-chevron-right"></i> Home</a></li>
+                    <li><a href="{% url 'accounts:smsabout' %}"><i class="fas fa-chevron-right"></i> About Us</a></li>
+                    <li><a href="{% url 'accounts:services' %}"><i class="fas fa-chevron-right"></i> Services</a></li>
+                    <li><a href="{% url 'accounts:register' %}"><i class="fas fa-chevron-right"></i> Register School</a></li>
                 </ul>
             </div>
 
@@ -476,10 +475,10 @@
                 <h5 class="footer-heading">Connect With Us</h5>
                 <p class="small opacity-75">Stay updated with our latest features and educational resources.</p>
                 <div class="social-icons d-flex gap-3 mb-4">
-                    <a href="#" class="social-link"><i class="fab fa-facebook-f"></i></a>
-                    <a href="#" class="social-link"><i class="fab fa-twitter"></i></a>
-                    <a href="#" class="social-link"><i class="fab fa-linkedin-in"></i></a>
-                    <a href="#" class="social-link"><i class="fab fa-instagram"></i></a>
+                    <a href="https://facebook.com" class="social-link"><i class="fab fa-facebook-f"></i></a>
+                    <a href="https://twitter.com" class="social-link"><i class="fab fa-twitter"></i></a>
+                    <a href="https://linkedin.com" class="social-link"><i class="fab fa-linkedin-in"></i></a>
+                    <a href="https://instagram.com" class="social-link"><i class="fab fa-instagram"></i></a>
                 </div>
                 <p class="small mb-1"><i class="fas fa-envelope me-2 text-secondary"></i> info@potlasms.com</p>
                 <p class="small"><i class="fas fa-phone me-2 text-secondary"></i> +91 98765 43210</p>

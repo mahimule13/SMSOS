@@ -1,0 +1,260 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Create Assignment{% endblock %}
+
+{% block content %}
+
+<div class="container-fluid py-4">
+
+    <!-- Page Header -->
+    <div class="d-flex justify-content-between align-items-center mb-4">
+
+        <div>
+
+            <h2 class="fw-bold">
+
+                <i class="fas fa-plus-circle text-primary"></i>
+
+                Create Assignment
+
+            </h2>
+
+            <p class="text-muted mb-0">
+                Create a new assignment for students.
+            </p>
+
+        </div>
+
+        <a href="{% url 'homework:assignment_list' %}"
+           class="btn btn-secondary">
+
+            <i class="fas fa-arrow-left"></i>
+
+            Back
+
+        </a>
+
+    </div>
+
+    <form method="POST">
+
+        {% csrf_token %}
+
+        <div class="row">
+
+            <!-- Left Side -->
+
+            <div class="col-lg-8">
+
+                <div class="card shadow-sm border-0 mb-4">
+
+                    <div class="card-header bg-primary text-white">
+
+                        <h5 class="mb-0">
+
+                            Assignment Information
+
+                        </h5>
+
+                    </div>
+
+                    <div class="card-body">
+
+                        <div class="mb-3">
+
+                            <label class="form-label">
+
+                                Assignment Title
+
+                            </label>
+
+                            <input
+                                type="text"
+                                name="title"
+                                class="form-control"
+                                required>
+
+                        </div>
+
+                        <div class="mb-3">
+
+                            <label class="form-label">
+
+                                Description
+
+                            </label>
+
+                            <textarea
+                                name="description"
+                                rows="8"
+                                class="form-control"
+                                placeholder="Enter assignment description..."
+                                required></textarea>
+
+                        </div>
+
+                    </div>
+
+                </div>
+
+            </div>
+
+            <!-- Right Side -->
+
+            <div class="col-lg-4">
+
+                <div class="card shadow-sm border-0">
+
+                    <div class="card-header bg-success text-white">
+
+                        <h5 class="mb-0">
+
+                            Assignment Details
+
+                        </h5>
+
+                    </div>
+
+                    <div class="card-body">
+
+                        <div class="mb-3">
+
+                            <label class="form-label">
+
+                                Subject
+
+                            </label>
+
+                            <select
+                                name="subject"
+                                class="form-select"
+                                required>
+
+                                <option value="">
+
+                                    Select Subject
+
+                                </option>
+
+                                {% for subject in subjects %}
+
+                                <option value="{{ subject.id }}">
+
+                                    {{ subject.name }}
+
+                                </option>
+
+                                {% endfor %}
+
+                            </select>
+
+                        </div>
+
+                        <div class="mb-3">
+
+                            <label class="form-label">
+
+                                Section
+
+                            </label>
+
+                            <select
+                                name="section"
+                                class="form-select"
+                                required>
+
+                                <option value="">
+
+                                    Select Section
+
+                                </option>
+
+                                {% for section in sections %}
+
+                                <option value="{{ section.id }}">
+
+                                    {{ section }}
+
+                                </option>
+
+                                {% endfor %}
+
+                            </select>
+
+                        </div>
+
+                        <div class="mb-3">
+
+                            <label class="form-label">
+
+                                Due Date
+
+                            </label>
+
+                            <input
+                                type="date"
+                                name="due_date"
+                                class="form-control"
+                                required>
+
+                        </div>
+
+                        <div class="mb-3">
+
+                            <label class="form-label">
+
+                                Total Marks
+
+                            </label>
+
+                            <input
+                                type="number"
+                                name="total_marks"
+                                class="form-control"
+                                value="100"
+                                required>
+
+                        </div>
+
+                    </div>
+
+                </div>
+
+                <!-- Buttons -->
+
+                <div class="card shadow-sm border-0 mt-3">
+
+                    <div class="card-body">
+
+                        <button
+                            type="submit"
+                            class="btn btn-primary w-100 mb-2">
+
+                            <i class="fas fa-save"></i>
+
+                            Create Assignment
+
+                        </button>
+
+                        <a href="{% url 'homework:assignment_list' %}"
+                           class="btn btn-outline-secondary w-100">
+
+                            see all assignments
+
+                        </a>
+
+
+                    </div>
+
+                </div>
+
+            </div>
+
+        </div>
+
+    </form>
+
+</div>
+
+{% endblock %}

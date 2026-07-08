@@ -433,6 +433,8 @@ def smsparent(request):
                     'students': students,
                     'selected_student_ids': selected_student_ids,
                     'selected_students': [],
+                    'selected_contact_values': selected_contact_values,
+                    'student_filter': student_filter,
                     'form': form,
                 },
             )
@@ -450,7 +452,9 @@ def smsparent(request):
                     'students': students,
                     'selected_student_ids': selected_student_ids,
                     'selected_students': selected_students,
+                    'student_filter': student_filter,
                     'form': form,
+                    'selected_contact_values': selected_contact_values,
                 },
             )
 
@@ -590,6 +594,8 @@ def smsparent(request):
                 'students': students,
                 'selected_student_ids': selected_student_ids,
                 'selected_students': selected_students,
+                'student_filter': student_filter,
+                'selected_contact_values': selected_contact_values,
                 'form': form,
             },
         )
@@ -605,6 +611,8 @@ def smsparent(request):
             'students': students,
             'selected_student_ids': [],
             'selected_students': [],
+            'student_filter': student_filter,
+            'selected_contact_values': [],
             'form': BulkSMSForm(),
         },
     )
@@ -984,7 +992,3 @@ def call_all_pending_fee_parents(request):
         'failed_reasons': sorted(list(set(failed_reasons))),
     }
     return JsonResponse(response)
-
-
-
-

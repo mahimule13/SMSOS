@@ -1,0 +1,135 @@
+{% extends 'base.html' %}
+
+{% block content %}
+
+<div class="container mt-4">
+
+<div class="row justify-content-center">
+
+<div class="col-lg-8">
+
+<div class="card shadow">
+
+<div class="card-header bg-primary text-white">
+
+<h3>
+
+{{ assignment.title }}
+
+</h3>
+
+</div>
+
+<div class="card-body">
+
+<p>
+
+<strong>Subject :</strong>
+
+{{ assignment.subject.name }}
+
+</p>
+
+<p>
+
+<strong>Section :</strong>
+
+{{ assignment.section }}
+
+</p>
+
+<p>
+
+<strong>Total Marks :</strong>
+
+{{ assignment.total_marks }}
+
+</p>
+
+<p>
+
+<strong>Due Date :</strong>
+
+{{ assignment.due_date }}
+
+</p>
+
+<hr>
+
+<h5>Description</h5>
+
+<div class="border rounded p-3 mb-4">
+
+{{ assignment.description }}
+
+</div>
+
+<hr>
+
+<h4>
+
+Submit Assignment
+
+</h4>
+
+<form
+
+method="POST"
+
+enctype="multipart/form-data">
+
+{% csrf_token %}
+
+<div class="mb-3">
+
+<label class="form-label">
+
+Choose File
+
+</label>
+
+<input
+
+type="file"
+
+name="submission_file"
+
+class="form-control"
+
+required>
+
+</div>
+
+<button
+
+type="submit"
+
+class="btn btn-success">
+
+Submit Assignment
+
+</button>
+
+<a
+
+href="{% url 'students:student_assignments' %}"
+
+class="btn btn-secondary">
+
+Back
+
+</a>
+
+</form>
+
+</div>
+
+</div>
+
+</div>
+
+</div>
+
+</div>
+
+{% endblock %}

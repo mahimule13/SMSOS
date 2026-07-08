@@ -66,23 +66,21 @@
                         class="form-control"
                         value="{{ request.GET.to_date }}">
                 </div>
-                <div class="col-md-3 d-flex align-items-end">
+        <div class="col-md-3 d-flex align-items-end">
 
-    <button type="submit" class="btn btn-primary me-2">
-        Search
-    </button>
+        <button type="submit" class="btn btn-primary me-2">
+            Search
+        </button>
 
-    <a href="{% url 'attendance:export_excel' %}"
-       class="btn btn-success me-2">
-        Export Excel
-    </a>
+        <button type="button" class="btn btn-success me-2" onclick="window.location.href='{% url 'attendance:export_excel' %}'">
+            Export Excel
+        </button>
 
-    <a href="{% url 'attendance:export_pdf' %}"
-       class="btn btn-danger me-2">
-        Export PDF
-    </a>
+        <button type="button" class="btn btn-danger me-2" onclick="window.location.href='{% url 'attendance:export_pdf' %}'">
+            Export PDF
+        </button>
 
-</div>
+    </div>
 
             </div>
         </form>
@@ -255,16 +253,23 @@
 </div>
 
     <!-- Teacher Attendance -->
-    <div class="card mt-4">
+<div class="card mt-4">
 
-    <div class="card-header">
+    <div class="card-header d-flex justify-content-between align-items-center">
         <h4>Teacher Attendance Analytics</h4>
+
+        <select id="teacherChartType" class="form-select w-auto">
+            <option value="daily">Daily</option>
+            <option value="weekly" selected>Weekly</option>
+            <option value="monthly">Monthly</option>
+        </select>
     </div>
 
     <div class="card-body">
-        <div style="width: 100%; height: 400px;">
+        <div style="height:400px;">
             <canvas id="teacherChart"></canvas>
         </div>
+    </div>
     </div>
    </div>
     <div class="card mt-4">
@@ -394,13 +399,19 @@
 
     </div>
 </div>
-    <div class="card mt-4">
-    <div class="card-header">
+<div class="card mt-4">
+    <div class="card-header d-flex justify-content-between align-items-center">
         <h4>Student Attendance Analytics</h4>
+
+        <select id="studentChartType" class="form-select w-auto">
+            <option value="daily">Daily</option>
+            <option value="weekly">Weekly</option>
+            <option value="monthly">Monthly</option>
+        </select>
     </div>
 
     <div class="card-body">
-        <div style="width: 100%; height: 400px;">
+        <div style="height:400px;">
             <canvas id="studentChart"></canvas>
         </div>
     </div>
@@ -469,87 +480,89 @@
 </div>
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 <script>
-const studentCtx =
-document.getElementById('studentChart');
+const studentCtx = document.getElementById("studentChart");
 
-new Chart(studentCtx, {
+const studentLabels = {{ student_labels|safe }};
 
-    type: 'line',
+const studentData = {
+    daily: {{ student_daily_data|safe }},
+    weekly: {{ student_weekly_data|safe }},
+    monthly: {{ student_monthly_data|safe }}
+};
 
+const studentChart = new Chart(studentCtx, {
+    type: "line",
     data: {
-
-        labels: {{ student_labels|safe }},
-
-        datasets: [
-
-            {
-                label: 'Daily Students',
-                data: {{ student_daily_data|safe }},
-                borderColor: 'green',
-                fill: false
-            },
-
-            {
-                label: 'Weekly Students',
-                data: {{ student_weekly_data|safe }},
-                borderColor: 'blue',
-                fill: false
-            },
-
-            {
-                label: 'Monthly Students',
-                data: {{ student_monthly_data|safe }},
-                borderColor: 'red',
-                fill: false
-            }
-
-        ]
+        labels: studentLabels,
+        datasets: [{
+            label: "Student Attendance",
+            data: studentData.weekly,
+            borderColor: "blue",
+            borderWidth: 3,
+            fill: false,
+            tension: 0.3
+        }]
     },
-    options:{
-        responsive:true,
-        maintainAspectRatio:false
+    options: {
+        responsive: true,
+        maintainAspectRatio: false
     }
 });
-const teacherCtx =
-document.getElementById('teacherChart');
 
-new Chart(teacherCtx, {
+document.getElementById("studentChartType").addEventListener("change", function () {
 
-    type: 'line',
+    let type = this.value;
 
+    studentChart.data.datasets[0].data = studentData[type];
+
+    studentChart.data.datasets[0].label =
+        type.charAt(0).toUpperCase() +
+        type.slice(1) +
+        " Student Attendance";
+
+    studentChart.update();
+});
+const teacherCtx = document.getElementById("teacherChart");
+
+const teacherLabels = {{ teacher_labels|safe }};
+
+const teacherData = {
+    daily: {{ teacher_daily_data|safe }},
+    weekly: {{ teacher_weekly_data|safe }},
+    monthly: {{ teacher_monthly_data|safe }}
+};
+
+const teacherChart = new Chart(teacherCtx, {
+    type: "line",
     data: {
-
-        labels: {{ teacher_labels|safe }},
-
-        datasets: [
-
-            {
-                label: 'Daily Teachers',
-                data: {{ teacher_daily_data|safe }},
-                borderColor: 'green',
-                fill: false
-            },
-
-            {
-                label: 'Weekly Teachers',
-                data: {{ teacher_weekly_data|safe }},
-                borderColor: 'blue',
-                fill: false
-            },
-
-            {
-                label: 'Monthly Teachers',
-                data: {{ teacher_monthly_data|safe }},
-                borderColor: 'red',
-                fill: false
-            }
-
-        ]
+        labels: teacherLabels,
+        datasets: [{
+            label: "Teacher Attendance",
+            data: teacherData.weekly,
+            borderColor: "red",
+            borderWidth: 3,
+            fill: false,
+            tension: 0.3
+        }]
     },
-    options:{
-        responsive:true,
-        maintainAspectRatio:false
+    options: {
+        responsive: true,
+        maintainAspectRatio: false
     }
+});
+
+document.getElementById("teacherChartType").addEventListener("change", function () {
+
+    let type = this.value;
+
+    teacherChart.data.datasets[0].data = teacherData[type];
+
+    teacherChart.data.datasets[0].label =
+        type.charAt(0).toUpperCase() +
+        type.slice(1) +
+        " Teacher Attendance";
+
+    teacherChart.update();
 });
 </script>
 

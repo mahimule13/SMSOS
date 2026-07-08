@@ -1,0 +1,105 @@
+{% extends 'base.html' %}
+
+{% block content %}
+
+<div class="container mt-4">
+
+    <div class="card shadow">
+
+        <div class="card-header bg-primary text-white">
+
+            <h4>Submitted Assignments</h4>
+
+        </div>
+
+        <div class="card-body">
+
+            <table class="table table-bordered table-hover">
+
+                <thead class="table-light">
+
+                    <tr>
+
+                        <th>Student</th>
+                        <th>Assignment</th>
+                        <th>Submitted On</th>
+                        <th>Status</th>
+                        <th>Action</th>
+
+                    </tr>
+
+                </thead>
+
+                <tbody>
+
+                    {% for submission in submissions %}
+
+                    <tr>
+
+                        <td>{{ submission.student.user.get_full_name }}</td>
+
+                        <td>{{ submission.assignment.title }}</td>
+
+                        <td>{{ submission.submitted_at }}</td>
+
+                        <td>
+
+                            {% if submission.is_checked %}
+
+                            <span class="badge bg-success">
+
+                                Checked
+
+                            </span>
+
+                            {% else %}
+
+                            <span class="badge bg-warning">
+
+                                Pending
+
+                            </span>
+
+                            {% endif %}
+
+                        </td>
+
+                        <td>
+
+                            <a href="{% url 'homework:check_submission' submission.id %}"
+
+                               class="btn btn-sm btn-primary">
+
+                                Check
+
+                            </a>
+
+                        </td>
+
+                    </tr>
+
+                    {% empty %}
+
+                    <tr>
+
+                        <td colspan="5">
+
+                            No submissions found.
+
+                        </td>
+
+                    </tr>
+
+                    {% endfor %}
+
+                </tbody>
+
+            </table>
+
+        </div>
+
+    </div>
+
+</div>
+
+{% endblock %}
