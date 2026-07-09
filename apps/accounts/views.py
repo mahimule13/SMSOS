@@ -700,6 +700,8 @@ def fee_pending_calls(request):
 
 @login_required(login_url='accounts:login')
 @role_required('teacher')
+@login_required(login_url='accounts:login')
+@role_required('teacher')
 def absent_calls(request):
     """Call parent(s) for students absent today."""
     if request.method != 'POST':
@@ -707,33 +709,75 @@ def absent_calls(request):
 
     from datetime import date
     from apps.students.models import Student, StudentAttendance
+    from apps.accounts.ivr_service import ParentContact, trigger_twilio_ivr_calls
 
     today = date.today()
+
     absent_student_ids = StudentAttendance.objects.filter(
         date=today,
         is_present=False,
     ).values_list('student_id', flat=True)
 
+    print("Today's date:", today)
+    print("Absent Student IDs:", list(absent_student_ids))
+
     students = (
-        Student.objects.filter(id__in=absent_student_ids, is_active=True)
-        .select_related('user')
+        Student.objects.filter(
+            id__in=absent_student_ids,
+            is_active=True
+        )
+        .select_related("user")
         .distinct()
     )
 
-    from apps.accounts.ivr_service import ParentContact, trigger_twilio_ivr_calls
+    print("Students Count:", students.count())
 
-    contacts: list[ParentContact] = []
+    contacts = []
+
     for s in students:
-        contacts.append(ParentContact(phone=s.father_phone, name=s.father_name))
+        print("--------------------------------")
+        print("Student:", s.id)
+
+        print("Father:", s.father_phone)
+        print("Mother:", s.mother_phone)
+        print("Guardian:", s.guardian_phone)
+
+        if s.father_phone:
+            contacts.append(
+                ParentContact(
+                    phone=s.father_phone,
+                    name=s.father_name,
+                )
+            )
+
         if s.mother_phone:
-            contacts.append(ParentContact(phone=s.mother_phone, name=s.mother_name))
+            contacts.append(
+                ParentContact(
+                    phone=s.mother_phone,
+                    name=s.mother_name,
+                )
+            )
+
         if s.guardian_phone:
-            contacts.append(ParentContact(phone=s.guardian_phone, name=s.guardian_name))
+            contacts.append(
+                ParentContact(
+                    phone=s.guardian_phone,
+                    name=s.guardian_name,
+                )
+            )
+
+    print("Contacts:", contacts)
 
     message = "Dear Parent, your child is absent today."
-    trigger_twilio_ivr_calls(contacts=contacts, message=message)
-    return redirect('dashboard:teacher_dashboard')
 
+    result = trigger_twilio_ivr_calls(
+        contacts=contacts,
+        message=message,
+    )
+
+    print(result)
+
+    return redirect("dashboard:teacher_dashboard")
 
 @login_required(login_url='accounts:login')
 @role_required('teacher')

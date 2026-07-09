@@ -303,10 +303,14 @@ def attendance_view(request):
     sections = Section.objects.all()
 
     if request.user.profile.role == 'teacher':
-        teacher = request.user.teacher_profile
-        allowed_sections = teacher.subject_allocation.values_list('section', flat=True).distinct()
-        students = students.filter(section__in=allowed_sections)
-        sections = Section.objects.filter(id__in=allowed_sections)
+        teacher = getattr(request.user, 'teacher_profile', None)
+        if teacher is None:
+            students = students.none()
+            sections = Section.objects.none()
+        else:
+            allowed_sections = teacher.subject_allocations.values_list('section_id', flat=True).distinct()
+            students = students.filter(section__in=allowed_sections)
+            sections = Section.objects.filter(id__in=allowed_sections)
 
     if section_id:
         students = students.filter(section_id=section_id)
